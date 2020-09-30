@@ -4,6 +4,8 @@ static const char *TAG = "gc9a01";
 
 #define HSPI_MAX_PIXELS (HSPI_MAX_LEN / sizeof(uint16_t))
 
+#define BLK_FADE_TIME 500
+
 #define COUNT(x) (sizeof(x) / sizeof(x[0]))
 
 static struct {
@@ -105,6 +107,8 @@ drv_pwm_init()
 
 	ledc_channel_config(&channel);
 
+	ledc_fade_func_install(0);
+
 	ESP_LOGV(TAG, "drv_pwm_init exit");
 }
 
@@ -173,8 +177,8 @@ void
 gc9a01_backlight(uint16_t level)
 {
 	ESP_LOGI(TAG, "Set backlight: %d", level);
-	ledc_set_duty(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, level);
-	ledc_update_duty(BLK_LEDC_MODE, BLK_LEDC_CHANNEL);
+	ledc_set_fade_with_time(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, level, BLK_FADE_TIME);
+	ledc_fade_start(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 
 void
