@@ -7,8 +7,8 @@
 #define PIN_CS GPIO_NUM_15
 #define PIN_DC GPIO_NUM_5
 #define PIN_RST GPIO_NUM_4
-// #define PIN_MOSI GPIO_NUM_13
-// #define PIN_CLK GPIO_NUM_14
+#define PIN_MOSI GPIO_NUM_13
+#define PIN_CLK GPIO_NUM_14
 
 #define SCREEN_SIZE 240
 

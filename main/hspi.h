@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define HSPI_MAX_LEN 64
+#define HSPI_MAX_LEN (256 * 2)
 
 void hspi_init(void);
 
