@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define PIN_BLK GPIO_NUM_16
+#define PIN_BLK GPIO_NUM_10
 #define PIN_CS GPIO_NUM_15
 #define PIN_DC GPIO_NUM_5
 #define PIN_RST GPIO_NUM_4
