@@ -1,0 +1,32 @@
+{
+    "files.associations": {
+        "random": "c",
+        "complex": "cpp",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "ranges": "c",
+        "functional": "c",
+        "system_error": "c"
+    },
+    "C_Cpp.default.includePath": [
+        "build/config",
+        "${IDF_PATH}/components/driver/include",
+        "${IDF_PATH}/components/esp32/include",
+        "${IDF_PATH}/components/esp_common/include",
+        "${IDF_PATH}/components/esp_rom/include",
+        "${IDF_PATH}/components/esp_system/include",
+        "${IDF_PATH}/components/esp_timer/include",
+        "${IDF_PATH}/components/freertos/include",
+        "${IDF_PATH}/components/freertos/xtensa/include",
+        "${IDF_PATH}/components/hal/esp32/include",
+        "${IDF_PATH}/components/hal/include",
+        "${IDF_PATH}/components/heap/include",
+        "${IDF_PATH}/components/soc/include",
+        "${IDF_PATH}/components/soc/soc/esp32/include",
+        "${IDF_PATH}/components/soc/soc/include",
+        "${IDF_PATH}/components/xtensa/esp32/include",
+        "${IDF_PATH}/components/xtensa/include",
+        "${HOME}/.espressif/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/xtensa-esp32-elf/include",
+    ],
+}
