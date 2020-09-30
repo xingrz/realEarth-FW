@@ -4,12 +4,14 @@ static const char *TAG = "task_btn";
 
 #define PIN_KEY_USER GPIO_NUM_0
 
-#define LEVEL_MIN 5
-#define LEVEL_MAX 255
+#define BL_MIN 2
+#define BL_MAX GC9A01_BACKLIGHT_MAX
+#define BL_STEP BL_MAX / 5
 
 static xQueueHandle btn_q = NULL;
 
-static bool bl_on = true;
+static int16_t bl_lvl = BL_MAX;
+static int16_t bl_step = -BL_STEP;
 
 static void
 drv_gpio_event(void *arg)
@@ -45,13 +47,23 @@ btn_proc_task(void *arg)
 
 	uint32_t num;
 	int val;
+	uint32_t lvl;
 	while (1) {
 		if (xQueueReceive(btn_q, &num, portMAX_DELAY)) {
 			val = gpio_get_level(num);
 			ESP_LOGV(TAG, "GPIO: %d=%d", num, val);
 			if (!val) {
-				bl_on = !bl_on;
-				gc9a01_backlight(bl_on);
+				bl_lvl += bl_step;
+				if (bl_lvl <= BL_MIN) {
+					bl_step = -bl_step;
+					lvl = BL_MIN;
+				} else if (bl_lvl >= BL_MAX) {
+					bl_step = -bl_step;
+					lvl = BL_MAX;
+				} else {
+					lvl = bl_lvl;
+				}
+				gc9a01_backlight(lvl);
 			}
 		}
 	}
