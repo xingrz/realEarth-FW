@@ -32,6 +32,7 @@
 #include "hspi.h"
 #include "gc9a01.h"
 #include "earth.h"
+#include "decode_image.h"
 
 #include "task_lcd.h"
 #include "task_btn.h"

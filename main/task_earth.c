@@ -3,6 +3,7 @@
 static const char *TAG = "task_earth";
 
 static uint8_t jpeg_buf[20 * 1024] = {0};
+static uint16_t pixels_buf[SCREEN_SIZE * SCREEN_SIZE] = {0};
 
 void
 earth_proc_task(void *arg)
@@ -27,6 +28,12 @@ earth_proc_task(void *arg)
 		}
 
 		ESP_LOGI(TAG, "Fetched %d bytes", fetched);
+
+		esp_err_t ret = decode_image(jpeg_buf, pixels_buf);
+		if (ret != ESP_OK) {
+			ESP_LOGW(TAG, "Failed decoding JPEG");
+			goto next;
+		}
 
 	next:
 		vTaskDelay(10 * 60 * 1000 / portTICK_PERIOD_MS);

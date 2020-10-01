@@ -9,6 +9,7 @@ set(COMPONENT_SRCS
     "gc9a01.c"
     "hspi.c"
     "earth.c"
+    "decode_image.c"
 )
 
 register_component()
