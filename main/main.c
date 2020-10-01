@@ -20,6 +20,9 @@ app_main(void)
 	ret = xTaskCreate(wlan_proc_task, "wlan_proc_task", 4096, boot, 10, NULL);
 	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(wlan_proc_task): %d", ret);
 
+	ret = xTaskCreate(ntp_proc_task, "ntp_proc_task", 2048, boot, 10, NULL);
+	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(ntp_proc_task): %d", ret);
+
 	xEventGroupWaitBits(boot, BOOT_TASK_ALL, pdFALSE, pdTRUE, portMAX_DELAY);
 	ESP_LOGI(TAG, "SYSTEM READY");
 

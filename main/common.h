@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -21,6 +23,7 @@
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_system.h"
+#include "esp_sntp.h"
 #include "nvs.h"
 #include "nvs_flash.h"
 
@@ -31,6 +34,7 @@
 #include "task_lcd.h"
 #include "task_btn.h"
 #include "task_wlan.h"
+#include "task_ntp.h"
 
 // #define BIT(NB) (1 << (NB))
 #define BITS(HB, LB) ((2 << (HB)) - (1 << (LB)))
@@ -38,6 +42,7 @@
 #define BOOT_TASK_LCD BIT(0)
 #define BOOT_TASK_BTN BIT(1)
 #define BOOT_TASK_WLAN BIT(2)
-#define BOOT_TASK_ALL BITS(2, 0)
+#define BOOT_TASK_NTP BIT(3)
+#define BOOT_TASK_ALL BITS(3, 0)
 
 #endif  // _CLOCK_COMMON_
