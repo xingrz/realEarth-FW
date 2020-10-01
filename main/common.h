@@ -30,12 +30,14 @@
 
 #include "task_lcd.h"
 #include "task_btn.h"
+#include "task_wlan.h"
 
 // #define BIT(NB) (1 << (NB))
 #define BITS(HB, LB) ((2 << (HB)) - (1 << (LB)))
 
 #define BOOT_TASK_LCD BIT(0)
 #define BOOT_TASK_BTN BIT(1)
-#define BOOT_TASK_ALL BITS(1, 0)
+#define BOOT_TASK_WLAN BIT(2)
+#define BOOT_TASK_ALL BITS(2, 0)
 
 #endif  // _CLOCK_COMMON_
