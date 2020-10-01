@@ -13,3 +13,11 @@ menu "Wi-Fi Connection"
             Can be left blank if the network has no security set.
 
 endmenu
+
+menu "Earth"
+    config PROJECT_EARTH_URL
+        string "Earth URL"
+        help
+            URL to fetch earth pictures from.
+
+endmenu

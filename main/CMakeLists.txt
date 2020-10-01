@@ -4,9 +4,11 @@ set(COMPONENT_SRCS
     "task_lcd.c"
     "task_wlan.c"
     "task_ntp.c"
+    "task_earth.c"
     "wlan.c"
     "gc9a01.c"
     "hspi.c"
+    "earth.c"
 )
 
 register_component()

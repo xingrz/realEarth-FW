@@ -24,17 +24,20 @@
 #include "esp_event.h"
 #include "esp_system.h"
 #include "esp_sntp.h"
+#include "esp_http_client.h"
 #include "nvs.h"
 #include "nvs_flash.h"
 
 #include "wlan.h"
 #include "hspi.h"
 #include "gc9a01.h"
+#include "earth.h"
 
 #include "task_lcd.h"
 #include "task_btn.h"
 #include "task_wlan.h"
 #include "task_ntp.h"
+#include "task_earth.h"
 
 // #define BIT(NB) (1 << (NB))
 #define BITS(HB, LB) ((2 << (HB)) - (1 << (LB)))
@@ -43,6 +46,7 @@
 #define BOOT_TASK_BTN BIT(1)
 #define BOOT_TASK_WLAN BIT(2)
 #define BOOT_TASK_NTP BIT(3)
-#define BOOT_TASK_ALL BITS(3, 0)
+#define BOOT_TASK_EARTH BIT(4)
+#define BOOT_TASK_ALL BITS(4, 0)
 
 #endif  // _CLOCK_COMMON_
