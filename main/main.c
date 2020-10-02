@@ -23,7 +23,7 @@ app_main(void)
 	ret = xTaskCreate(ntp_proc_task, "ntp_proc_task", 2048, boot, 10, NULL);
 	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(ntp_proc_task): %d", ret);
 
-	ret = xTaskCreate(earth_proc_task, "earth_proc_task", 40 * 1024, boot, 10, NULL);
+	ret = xTaskCreate(earth_proc_task, "earth_proc_task", 20 * 1024, boot, 10, NULL);
 	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(earth_proc_task): %d", ret);
 
 	xEventGroupWaitBits(boot, BOOT_TASK_ALL, pdFALSE, pdTRUE, portMAX_DELAY);

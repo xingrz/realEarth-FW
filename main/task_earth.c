@@ -35,6 +35,8 @@ earth_proc_task(void *arg)
 			goto next;
 		}
 
+		lcd_draw(pixels_buf);
+
 	next:
 		vTaskDelay(10 * 60 * 1000 / portTICK_PERIOD_MS);
 	}

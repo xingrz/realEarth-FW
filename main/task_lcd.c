@@ -2,15 +2,13 @@
 
 static const char *TAG = "task_lcd";
 
-#define WHITE 0xFFFF
-#define MAGENTA 0xF81F
-#define GREEN 0x07E0
-#define CYAN 0x7FFF
-#define YELLOW 0xFFE0
+static xQueueHandle lcd_q = NULL;
 
 void
 lcd_proc_task(void *arg)
 {
+	lcd_q = xQueueCreate(10, sizeof(uint16_t *));
+
 	ESP_LOGI(TAG, "Init LCD...");
 	gc9a01_init();
 	gc9a01_fill(0x0000);
@@ -20,18 +18,21 @@ lcd_proc_task(void *arg)
 
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_LCD);
 
+	uint16_t *pixels = NULL;
 	while (1) {
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gc9a01_fill(MAGENTA);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gc9a01_fill(GREEN);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gc9a01_fill(CYAN);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gc9a01_fill(YELLOW);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gc9a01_fill(WHITE);
+		if (xQueueReceive(lcd_q, &pixels, portMAX_DELAY) != pdPASS) {
+			vTaskDelay(10);
+			continue;
+		}
+
+		gc9a01_draw(pixels);
 	}
 
 	vTaskDelete(NULL);
+}
+
+void
+lcd_draw(uint16_t *pixels)
+{
+	xQueueSendToBack(lcd_q, &pixels, 0);
 }
