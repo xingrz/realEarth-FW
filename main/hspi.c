@@ -13,16 +13,18 @@ hspi_init(void)
 
 	spi_bus_config_t bus = {
 			.mosi_io_num = PIN_MOSI,
+			.miso_io_num = -1,
 			.sclk_io_num = PIN_CLK,
 			.quadwp_io_num = -1,
 			.quadhd_io_num = -1,
 			.max_transfer_sz = HSPI_MAX_LEN,
+			.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_IOMUX_PINS,
 	};
 
 	ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &bus, DMA_CHAN));
 
 	spi_device_interface_config_t dev = {
-			.clock_speed_hz = 26 * 1000 * 1000,
+			.clock_speed_hz = 40 * 1000 * 1000,
 			.mode = 0,
 			.spics_io_num = PIN_CS,
 			.queue_size = 7,
