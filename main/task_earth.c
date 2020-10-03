@@ -37,6 +37,26 @@ earth_proc_task(void *arg)
 
 		lcd_draw(pixels_buf);
 
+		if (timeinfo.tm_hour >= 20) {
+			gc9a01_set_backlight(0);
+		} else if (timeinfo.tm_hour >= 18) {
+			gc9a01_set_backlight(1);
+		} else if (timeinfo.tm_hour >= 16) {
+			gc9a01_set_backlight(2);
+		} else if (timeinfo.tm_hour >= 14) {
+			gc9a01_set_backlight(3);
+		} else if (timeinfo.tm_hour >= 10) {
+			gc9a01_set_backlight(4);
+		} else if (timeinfo.tm_hour >= 8) {
+			gc9a01_set_backlight(3);
+		} else if (timeinfo.tm_hour >= 6) {
+			gc9a01_set_backlight(2);
+		} else if (timeinfo.tm_hour >= 4) {
+			gc9a01_set_backlight(1);
+		} else {
+			gc9a01_set_backlight(0);
+		}
+
 	next:
 		vTaskDelay(10 * 60 * 1000 / portTICK_PERIOD_MS);
 	}
