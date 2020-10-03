@@ -16,7 +16,7 @@ lcd_proc_task(void *arg)
 	gc9a01_fill(0x0000);
 
 	ESP_LOGI(TAG, "Enable backlight...");
-	gc9a01_backlight(GC9A01_BACKLIGHT_MAX);
+	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
 
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_LCD);
 
