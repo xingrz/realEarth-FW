@@ -8,6 +8,9 @@ static const char *TAG = "gc9a01";
 
 #define COUNT(x) (sizeof(x) / sizeof(x[0]))
 
+static uint16_t blk_steps[GC9A01_BACKLIGHT_MAX + 1] = {2, 15, 31, 63, 127};
+static uint16_t blk_level = GC9A01_BACKLIGHT_MAX;
+
 static struct {
 	uint8_t cmd;
 	uint8_t len;
@@ -173,12 +176,19 @@ gc9a01_init(void)
 	vTaskDelay(120 / portTICK_PERIOD_MS);
 }
 
+uint16_t
+gc9a01_get_backlight(void)
+{
+	return blk_level;
+}
+
 void
-gc9a01_backlight(uint16_t level)
+gc9a01_set_backlight(uint16_t level)
 {
 	ESP_LOGI(TAG, "Set backlight: %d", level);
-	ledc_set_fade_with_time(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, level, BLK_FADE_TIME);
+	ledc_set_fade_with_time(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, blk_steps[level], BLK_FADE_TIME);
 	ledc_fade_start(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, LEDC_FADE_NO_WAIT);
+	blk_level = level;
 }
 
 void

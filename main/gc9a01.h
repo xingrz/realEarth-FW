@@ -15,12 +15,13 @@
 #define BLK_LEDC_CHANNEL LEDC_CHANNEL_0
 #define BLK_LEDC_RES LEDC_TIMER_7_BIT
 
-#define GC9A01_BACKLIGHT_MAX ((2 << BLK_LEDC_RES) / 2 - 1)
+#define GC9A01_BACKLIGHT_MAX 4
 
 #define SCREEN_SIZE 240
 
 void gc9a01_init(void);
-void gc9a01_backlight(uint16_t level);
+uint16_t gc9a01_get_backlight(void);
+void gc9a01_set_backlight(uint16_t level);
 void gc9a01_fill(uint16_t color);
 void gc9a01_draw(uint16_t *pixels);
 
