@@ -1,0 +1,7 @@
+language: c
+
+services:
+  - docker
+
+script:
+  - docker run --rm -v $(pwd):/project -w /project espressif/idf:latest idf.py build
