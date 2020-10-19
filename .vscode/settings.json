@@ -11,6 +11,13 @@
     },
     "C_Cpp.default.includePath": [
         "build/config",
+        "${IDF_PATH}/components/bt/host/nimble/esp-hci/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gap/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gatt/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/nimble/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/porting/nimble/include",
+        "${IDF_PATH}/components/bt/host/nimble/nimble/porting/npl/freertos/include",
         "${IDF_PATH}/components/driver/include",
         "${IDF_PATH}/components/esp32/include",
         "${IDF_PATH}/components/esp_common/include",
