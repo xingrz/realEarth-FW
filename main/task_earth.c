@@ -2,8 +2,8 @@
 
 static const char *TAG = "task_earth";
 
-static uint8_t jpeg_buf[20 * 1024] = {0};
-static uint16_t pixels_buf[SCREEN_SIZE * SCREEN_SIZE] = {0};
+#define JPEG_BUF_SIZE (20 * 1024)
+#define PIXELS_BUF_CNT (SCREEN_SIZE * SCREEN_SIZE)
 
 void
 earth_proc_task(void *arg)
@@ -12,6 +12,9 @@ earth_proc_task(void *arg)
 	struct tm timeinfo;
 
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_EARTH);
+
+	uint8_t *jpeg_buf = (uint8_t *)malloc(JPEG_BUF_SIZE);
+	uint16_t *pixels_buf = (uint16_t *)malloc(PIXELS_BUF_CNT * sizeof(uint16_t));
 
 	while (1) {
 		time(&now);
@@ -22,7 +25,7 @@ earth_proc_task(void *arg)
 			continue;
 		}
 
-		uint32_t fetched = earth_fetch(now, jpeg_buf, sizeof(jpeg_buf));
+		uint32_t fetched = earth_fetch(now, jpeg_buf, JPEG_BUF_SIZE);
 		if (fetched == 0) {
 			goto next;
 		}
@@ -60,6 +63,9 @@ earth_proc_task(void *arg)
 	next:
 		vTaskDelay(10 * 60 * 1000 / portTICK_PERIOD_MS);
 	}
+
+	free(jpeg_buf);
+	free(pixels_buf);
 
 	vTaskDelete(NULL);
 }
