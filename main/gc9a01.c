@@ -220,6 +220,13 @@ gc9a01_fill(uint16_t color)
 void
 gc9a01_draw(uint16_t *pixels)
 {
+	gc9a01_draw_part_start();
+	gc9a01_draw_part_lines(pixels, SCREEN_SIZE);
+}
+
+void
+gc9a01_draw_part_start(void)
+{
 	write_reg(0x2A);
 	write_data16(0);
 	write_data16(SCREEN_SIZE - 1);
@@ -228,10 +235,14 @@ gc9a01_draw(uint16_t *pixels)
 	write_data16(0);
 	write_data16(SCREEN_SIZE - 1);
 
-	uint16_t padding[17] = {0x0000};
-
 	write_reg(0x2C);
-	for (int y = 0; y < SCREEN_SIZE - 1; y++) {
+}
+
+void
+gc9a01_draw_part_lines(uint16_t *pixels, uint16_t lines)
+{
+	uint16_t padding[17] = {0x0000};
+	for (int y = 0; y < lines; y++) {
 		// The number of regulators each line is 256 + 1
 		write_data(pixels + y * SCREEN_SIZE, SCREEN_SIZE * sizeof(uint16_t));
 		write_data(padding, sizeof(padding));

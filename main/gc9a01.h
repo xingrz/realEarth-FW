@@ -24,5 +24,7 @@ uint16_t gc9a01_get_backlight(void);
 void gc9a01_set_backlight(uint16_t level);
 void gc9a01_fill(uint16_t color);
 void gc9a01_draw(uint16_t *pixels);
+void gc9a01_draw_part_start(void);
+void gc9a01_draw_part_lines(uint16_t *pixels, uint16_t lines);
 
 #endif  // _CLOCK_GC9A01_

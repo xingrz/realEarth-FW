@@ -19,7 +19,7 @@ const char *TAG = "decode_image";
 typedef struct {
 	const uint8_t *input;
 	uint16_t input_pos;
-	uint16_t *output;
+	decode_cb output_cb;
 } decode_ctx_t;
 
 static uint16_t
@@ -37,25 +37,12 @@ static uint16_t
 outfunc(JDEC *decoder, void *bitmap, JRECT *rect)
 {
 	decode_ctx_t *ctx = (decode_ctx_t *)decoder->device;
-	uint8_t *in = (uint8_t *)bitmap;
-	for (int y = rect->top; y <= rect->bottom; y++) {
-		for (int x = rect->left; x <= rect->right; x++) {
-			// We need to convert the 3 bytes in `in` to a rgb565 value.
-			uint16_t v = 0;
-			v |= ((in[0] >> 3) << 11);
-			v |= ((in[1] >> 2) << 5);
-			v |= ((in[2] >> 3) << 0);
-			// The LCD wants the 16-bit value in big-endian, so swap bytes
-			v = (v >> 8) | (v << 8);
-			ctx->output[y * SCREEN_SIZE + x] = v;
-			in += 3;
-		}
-	}
+	ctx->output_cb((uint8_t *)bitmap, rect->left, rect->right, rect->top, rect->bottom);
 	return 1;
 }
 
 esp_err_t
-decode_image(uint8_t *input, uint16_t *output)
+decode_image(uint8_t *input, decode_cb cb)
 {
 	esp_err_t ret = ESP_OK;
 	uint8_t work[WORKSZ] = {0};
@@ -65,7 +52,7 @@ decode_image(uint8_t *input, uint16_t *output)
 	decode_ctx_t ctx = {
 			.input = input,
 			.input_pos = 0,
-			.output = output,
+			.output_cb = cb,
 	};
 
 	// Prepare and decode the jpeg.
