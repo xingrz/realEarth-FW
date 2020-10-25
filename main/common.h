@@ -11,7 +11,6 @@
 #include "freertos/event_groups.h"
 
 #include "driver/gpio.h"
-#include "driver/ledc.h"
 #include "driver/spi_master.h"
 
 #include "sdkconfig.h"
