@@ -184,6 +184,8 @@ gc9a01_backlight(uint16_t level)
 void
 gc9a01_fill(uint16_t color)
 {
+	ESP_LOGI(TAG, "Fill color %04X", color);
+
 	write_reg(0x2A);
 	write_data16(0);
 	write_data16(SCREEN_SIZE - 1);
