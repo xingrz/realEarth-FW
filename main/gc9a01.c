@@ -70,7 +70,7 @@ drv_gpio_init()
 
 	gpio_config_t output = {
 			.intr_type = GPIO_INTR_DISABLE,
-			.pin_bit_mask = (1UL << PIN_BLK) | (1UL << PIN_DC) | (1UL << PIN_RST),
+			.pin_bit_mask = (1UL << PIN_DC) | (1UL << PIN_RST),
 			.mode = GPIO_MODE_OUTPUT,
 			.pull_up_en = GPIO_PULLUP_ENABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -79,6 +79,37 @@ drv_gpio_init()
 	gpio_config(&output);
 
 	ESP_LOGV(TAG, "drv_gpio_init exit");
+}
+
+static void
+drv_pwm_init()
+{
+	ESP_LOGV(TAG, "drv_pwm_init enter");
+
+	ledc_timer_config_t timer = {
+			.duty_resolution = BLK_LEDC_RES,
+			.freq_hz = 5000,
+			.speed_mode = BLK_LEDC_MODE,
+			.timer_num = BLK_LEDC_TIMER,
+			.clk_cfg = LEDC_AUTO_CLK,
+	};
+
+	ledc_timer_config(&timer);
+
+	ledc_channel_config_t channel = {
+			.channel = BLK_LEDC_CHANNEL,
+			.duty = 0,
+			.gpio_num = PIN_BLK,
+			.speed_mode = BLK_LEDC_MODE,
+			.hpoint = 0,
+			.timer_sel = BLK_LEDC_TIMER,
+	};
+
+	ledc_channel_config(&channel);
+
+	ledc_fade_func_install(0);
+
+	ESP_LOGV(TAG, "drv_pwm_init exit");
 }
 
 static void
@@ -114,6 +145,7 @@ gc9a01_init(void)
 {
 	ESP_LOGI(TAG, "Init interfaces...");
 	drv_gpio_init();
+	drv_pwm_init();
 	hspi_init();
 
 	ESP_LOGI(TAG, "Reset panel...");
@@ -142,10 +174,11 @@ gc9a01_init(void)
 }
 
 void
-gc9a01_backlight(uint8_t level)
+gc9a01_backlight(uint16_t level)
 {
 	ESP_LOGI(TAG, "Set backlight: %d", level);
-	gpio_set_level(PIN_BLK, !!level);
+	ledc_set_fade_with_time(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, level, BLK_FADE_TIME);
+	ledc_fade_start(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, LEDC_FADE_NO_WAIT);
 }
 
 void
