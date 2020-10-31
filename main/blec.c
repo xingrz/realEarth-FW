@@ -19,8 +19,12 @@ static uint16_t blec_val_handle;
 
 static blec_recv_cb blec_on_recv = NULL;
 
+static bool blec_sync_ready = false;
+static bool blec_advertising = false;
+
 void ble_store_config_init(void);
 
+static void blec_advertise(void);
 static void blec_host_task(void *param);
 static void blec_on_reset(int reason);
 static void blec_on_sync(void);
@@ -91,10 +95,28 @@ blec_send(void *buf, uint16_t len)
 	assert(rc == 0);
 }
 
+void
+blec_adv_start()
+{
+	blec_advertising = true;
+	blec_advertise();
+}
+
+void
+blec_adv_stop()
+{
+	blec_advertising = false;
+	ble_gap_adv_stop();
+}
+
 static void
 blec_advertise(void)
 {
 	int rc;
+
+	if (!blec_sync_ready || !blec_advertising) {
+		return;
+	}
 
 	const char *name = ble_svc_gap_device_name();
 
@@ -178,6 +200,7 @@ blec_on_sync(void)
 	ESP_LOGI(TAG, "Device Address: %02X:%02X:%02X:%02X:%02X:%02X", addr[0], addr[1], addr[2],
 			addr[3], addr[4], addr[5]);
 
+	blec_sync_ready = true;
 	blec_advertise();
 }
 
