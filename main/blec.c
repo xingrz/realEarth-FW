@@ -12,6 +12,13 @@ static const ble_uuid128_t blec_uuid = BLE_UUID128_INIT(0xeb, 0x6b, 0x88, 0x16, 
 static const ble_uuid128_t blec_char_uuid = BLE_UUID128_INIT(0xa3, 0x27, 0xb4, 0xe0, 0x4b, 0xd9,
 		0x17, 0x8b, 0xcd, 0x49, 0x95, 0x80, 0xd8, 0xdf, 0xb0, 0x90);
 
+static uint8_t blec_mfg_data[] = {
+		0x7E,
+		0x10,  // mfg id
+		0x19, 0x96, 0x11,
+		0x08,  // mfg data
+};
+
 static uint8_t own_addr_type;
 
 static uint16_t blec_conn_handle;
@@ -140,6 +147,9 @@ blec_advertise(void)
 			 */
 			.tx_pwr_lvl_is_present = 1,
 			.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO,
+
+			.mfg_data = blec_mfg_data,
+			.mfg_data_len = sizeof(blec_mfg_data),
 
 			.name = (uint8_t *)name,
 			.name_len = strlen(name),
