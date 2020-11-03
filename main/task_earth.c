@@ -2,6 +2,8 @@
 
 static const char *TAG = "task_earth";
 
+// #define DEBUG_FORCE_NOON
+
 #define DRAW_RECT_SIZE 16
 
 static uint8_t jpeg_buf[20 * 1024] = {0};
@@ -50,6 +52,15 @@ earth_proc_task(void *arg)
 			vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
 			continue;
 		}
+
+#ifdef DEBUG_FORCE_NOON
+		if (timeinfo.tm_hour > 13) {
+			now -= (timeinfo.tm_hour - 12) * 60 * 60;
+		} else if (timeinfo.tm_hour < 11) {
+			now -= (timeinfo.tm_hour + 12) * 60 * 60;
+		}
+		localtime_r(&now, &timeinfo);
+#endif
 
 		uint32_t fetched = earth_fetch(now, jpeg_buf, sizeof(jpeg_buf));
 		if (fetched == 0) {
