@@ -92,6 +92,7 @@ ble_handle_cmd(uint16_t cmd, void *data, uint16_t len)
 			password[password_len] = 0;
 
 			ESP_LOGI(TAG, "Setup Wi-Fi, ssid: %s, password: %s", ssid, password);
+			wlan_setup(ssid, password);
 			break;
 		}
 

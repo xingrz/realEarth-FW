@@ -9,9 +9,13 @@ static esp_netif_t *s_esp_netif = NULL;
 static esp_ip4_addr_t s_ip_addr;
 static xSemaphoreHandle s_semph_get_ip_addrs;
 
+static char wlan_ssid[33];
+static bool wlan_connected = false;
+
 static void
 on_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+	wlan_connected = false;
 	ESP_LOGI(TAG, "Wi-Fi disconnected, trying to reconnect...");
 	ESP_ERROR_CHECK(esp_wifi_connect());
 }
@@ -22,10 +26,11 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 	ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
 	memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
 	xSemaphoreGive(s_semph_get_ip_addrs);
+	wlan_connected = true;
 }
 
 static void
-start(void)
+start(char *ssid, char *password)
 {
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -40,10 +45,9 @@ start(void)
 	ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
 
 	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-	wifi_config_t wifi_config = {.sta = {
-										 .ssid = CONFIG_PROJECT_WIFI_SSID,
-										 .password = CONFIG_PROJECT_WIFI_PASSWORD,
-								 }};
+	wifi_config_t wifi_config = {.sta = {.ssid = {0}, .password = {0}}};
+	strcpy((char *)wifi_config.sta.ssid, ssid);
+	strcpy((char *)wifi_config.sta.password, password);
 	ESP_LOGI(TAG, "Connecting to %s...", wifi_config.sta.ssid);
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
@@ -72,12 +76,17 @@ stop(void)
 }
 
 esp_err_t
-wlan_connect(void)
+wlan_connect(char *ssid, char *password)
 {
 	if (s_semph_get_ip_addrs != NULL) {
 		return ESP_ERR_INVALID_STATE;
 	}
-	start();
+	if (strcmp(wlan_ssid, ssid) == 0) {
+		ESP_LOGI(TAG, "Already configured %s, ignored", ssid);
+		return ESP_OK;
+	}
+	strcpy(wlan_ssid, ssid);
+	start(ssid, password);
 	ESP_ERROR_CHECK(esp_register_shutdown_handler(&stop));
 	ESP_LOGI(TAG, "Waiting for IP(s)");
 	xSemaphoreTake(s_semph_get_ip_addrs, portMAX_DELAY);
@@ -91,6 +100,7 @@ wlan_disconnect(void)
 	if (s_semph_get_ip_addrs == NULL) {
 		return ESP_ERR_INVALID_STATE;
 	}
+	memset(wlan_ssid, 0, sizeof(wlan_ssid));
 	vSemaphoreDelete(s_semph_get_ip_addrs);
 	s_semph_get_ip_addrs = NULL;
 	stop();
