@@ -34,7 +34,7 @@ drv_gpio_init()
 void
 btn_proc_task(void *arg)
 {
-	btn_q = xQueueCreate(10, sizeof(uint32_t));
+	btn_q = xQueueCreate(3, sizeof(uint32_t));
 
 	drv_gpio_init();
 
