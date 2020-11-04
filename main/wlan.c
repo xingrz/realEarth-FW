@@ -27,9 +27,6 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 static void
 start(char *ssid, char *password)
 {
-	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
 	esp_netif_inherent_config_t esp_netif_config = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
 	s_esp_netif = esp_netif_create_wifi(WIFI_IF_STA, &esp_netif_config);
 

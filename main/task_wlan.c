@@ -15,7 +15,7 @@ typedef struct {
 	char password[WLAN_PASSWORD_LEN];
 } wlan_msg_t;
 
-static char wlan_ssid[WLAN_SSID_LEN];
+static char wlan_ssid[WLAN_SSID_LEN] = {0};
 
 void
 wlan_proc_task(void *arg)
@@ -27,10 +27,14 @@ wlan_proc_task(void *arg)
 
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_WLAN);
 
+	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
 	userdata_t user = {0};
 	userdata_read(&user);
 	if (strlen(user.ssid) > 0) {
 		ESP_LOGI(TAG, "Read stored Wi-Fi ssid: %s, password: %s", user.ssid, user.password);
+		strcpy(wlan_ssid, user.ssid);
 		wlan_connect(user.ssid, user.password);
 	} else {
 		ESP_LOGI(TAG, "Wi-Fi not set");
@@ -45,6 +49,8 @@ wlan_proc_task(void *arg)
 		switch (msg.what) {
 			case e_wlan_set:
 				ESP_LOGI(TAG, "Connecting to WLAN \"%s\"...", msg.ssid);
+				wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+				ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 				wlan_connect(msg.ssid, msg.password);
 
 				userdata_t user = {0};
@@ -92,4 +98,10 @@ wlan_reset(void)
 {
 	wlan_msg_t msg = {.what = e_wlan_unset};
 	xQueueSend(wlan_q, &msg, 0);
+}
+
+bool
+wlan_configured(void)
+{
+	return strlen(wlan_ssid) > 0;
 }

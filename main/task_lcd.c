@@ -10,6 +10,8 @@ static uint16_t pixels_buf[SCREEN_SIZE * DRAW_RECT_SIZE] = {0};
 static uint8_t *lcd_bg = NULL;
 
 extern const uint8_t pic_loading_start[] asm("_binary_pic_loading_jpg_start");
+extern const uint8_t pic_offline_start[] asm("_binary_pic_offline_jpg_start");
+extern const uint8_t pic_qrcode_start[] asm("_binary_pic_qrcode_jpg_start");
 
 static inline uint16_t
 rgb888_to_rgb565(uint8_t *in)
@@ -45,7 +47,7 @@ lcd_proc_task(void *arg)
 
 	ESP_LOGI(TAG, "Init LCD...");
 	gc9a01_init();
-	lcd_draw_bg(&pic_loading_start);
+	gc9a01_fill(0x0000);
 
 	ESP_LOGI(TAG, "Enable backlight...");
 	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
@@ -70,6 +72,28 @@ lcd_proc_task(void *arg)
 	}
 
 	vTaskDelete(NULL);
+}
+
+void
+lcd_init(void)
+{
+	if (wlan_configured()) {
+		lcd_draw_bg((uint8_t *)pic_loading_start);
+	} else {
+		lcd_draw_bg((uint8_t *)pic_offline_start);
+	}
+}
+
+void
+lcd_show_loading(void)
+{
+	lcd_draw_bg((uint8_t *)pic_loading_start);
+}
+
+void
+lcd_show_qrcode(void)
+{
+	lcd_draw_bg((uint8_t *)pic_qrcode_start);
 }
 
 void

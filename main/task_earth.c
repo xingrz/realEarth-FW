@@ -15,6 +15,11 @@ earth_proc_task(void *arg)
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_EARTH);
 
 	while (1) {
+		if (!wlan_configured()) {
+			vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
+			continue;
+		}
+
 		time(&now);
 		localtime_r(&now, &timeinfo);
 		if (timeinfo.tm_year < (2016 - 1900)) {

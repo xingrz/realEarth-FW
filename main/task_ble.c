@@ -72,10 +72,31 @@ reset:
 }
 
 static void
+ble_send_ack()
+{
+	uint8_t buf[sizeof(req_header_t) + 1] = {0};
+	req_header_t *hdr = (req_header_t *)buf;
+	hdr->magic = SETUP_MAGIC;
+	hdr->cmd = CMD_ACK;
+	hdr->len = sizeof(buf);
+
+	uint64_t crc = 0;
+	for (uint16_t i = 0; i < hdr->len - 1; i++) {
+		crc += buf[i];
+	}
+	buf[hdr->len - 1] = (crc & 0xff);
+
+	blec_send(buf, sizeof(buf));
+}
+
+static void
 ble_handle_cmd(uint16_t cmd, void *data, uint16_t len)
 {
 	switch (cmd) {
 		case CMD_SETUP: {
+			ble_send_ack();
+			lcd_show_loading();
+
 			char ssid[WLAN_SSID_LEN];
 			char password[WLAN_PASSWORD_LEN];
 
@@ -108,8 +129,6 @@ ble_proc_task(void *arg)
 
 	blec_init(ble_recv_cb);
 	ESP_LOGI(TAG, "BLE init done");
-
-	blec_adv_start();
 
 	vTaskDelete(NULL);
 }

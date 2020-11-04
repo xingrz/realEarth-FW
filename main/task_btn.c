@@ -7,8 +7,6 @@ static const char *TAG = "task_btn";
 static xQueueHandle btn_q = NULL;
 static TickType_t btn_down_ticks = 0;
 
-extern const uint8_t pic_qrcode_start[] asm("_binary_pic_qrcode_jpg_start");
-
 static void
 drv_gpio_event(void *arg)
 {
@@ -58,9 +56,11 @@ btn_proc_task(void *arg)
 			uint32_t hold_ms = (ticks - btn_down_ticks) * portTICK_PERIOD_MS;
 			ESP_LOGI(TAG, "Button hold: %d ms", hold_ms);
 
-			if (hold_ms > 3000) {
+			if (hold_ms > 1000) {
 				wlan_reset();
-				lcd_draw_fg((uint8_t *)pic_qrcode_start);
+				lcd_show_qrcode();
+				gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
+				blec_adv_start();
 			}
 		}
 
