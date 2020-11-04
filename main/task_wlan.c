@@ -4,7 +4,13 @@ static const char *TAG = "task_wlan";
 
 static xQueueHandle wlan_q = NULL;
 
+typedef enum {
+	e_wlan_set = 1,
+	e_wlan_unset = 2,
+} wlan_msg_e;
+
 typedef struct {
+	wlan_msg_e what;
 	char ssid[WLAN_SSID_LEN];
 	char password[WLAN_PASSWORD_LEN];
 } wlan_msg_t;
@@ -36,18 +42,28 @@ wlan_proc_task(void *arg)
 			goto next;
 		}
 
-		ESP_LOGI(TAG, "Connecting to WLAN \"%s\"...", msg.ssid);
-		wlan_connect(msg.ssid, msg.password);
+		switch (msg.what) {
+			case e_wlan_set:
+				ESP_LOGI(TAG, "Connecting to WLAN \"%s\"...", msg.ssid);
+				wlan_connect(msg.ssid, msg.password);
 
-		userdata_t user = {0};
-		strcpy(user.ssid, msg.ssid);
-		strcpy(user.password, msg.password);
-		userdata_write(&user);
-		ESP_LOGI(TAG, "Settings stored");
+				userdata_t user = {0};
+				strcpy(user.ssid, msg.ssid);
+				strcpy(user.password, msg.password);
+				userdata_write(&user);
+				ESP_LOGI(TAG, "Settings stored");
 
-		vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
+				vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 
-		esp_restart();
+				esp_restart();
+				break;
+			case e_wlan_unset:
+				ESP_LOGI(TAG, "Clearing WLAN settings...");
+				wlan_disconnect();
+				userdata_clear();
+				memset(wlan_ssid, 0, sizeof(wlan_ssid));
+				break;
+		}
 
 	next:
 		vTaskDelay(10);
@@ -65,8 +81,15 @@ wlan_setup(char *ssid, char *password)
 	}
 	strcpy(wlan_ssid, ssid);
 
-	wlan_msg_t msg = {0};
+	wlan_msg_t msg = {.what = e_wlan_set};
 	strcpy(msg.ssid, ssid);
 	strcpy(msg.password, password);
+	xQueueSend(wlan_q, &msg, 0);
+}
+
+void
+wlan_reset(void)
+{
+	wlan_msg_t msg = {.what = e_wlan_unset};
 	xQueueSend(wlan_q, &msg, 0);
 }

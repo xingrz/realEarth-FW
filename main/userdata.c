@@ -69,3 +69,19 @@ userdata_write(userdata_t *data)
 
 	return esp_flash_write(part->flash_chip, data, part->address, sizeof(userdata_t));
 }
+
+esp_err_t
+userdata_clear(void)
+{
+	esp_err_t ret;
+
+	ret = esp_flash_erase_region(part->flash_chip, part->address, part->size);
+	if (ret != ESP_OK) {
+		ESP_LOGE(TAG, "Failed erasing partition for factory reset");
+		return ret;
+	}
+
+	ESP_LOGI(TAG, "Partition erased");
+
+	return ESP_OK;
+}

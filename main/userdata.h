@@ -12,5 +12,6 @@ typedef struct {
 esp_err_t userdata_init(void);
 esp_err_t userdata_read(userdata_t *data);
 esp_err_t userdata_write(userdata_t *data);
+esp_err_t userdata_clear(void);
 
 #endif  // _CLOCK_USERDATA_

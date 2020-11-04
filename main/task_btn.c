@@ -5,7 +5,7 @@ static const char *TAG = "task_btn";
 #define PIN_KEY_USER GPIO_NUM_0
 
 static xQueueHandle btn_q = NULL;
-static bool qrcode_shown = false;
+static TickType_t btn_down_ticks = 0;
 
 extern const uint8_t pic_qrcode_start[] asm("_binary_pic_qrcode_jpg_start");
 
@@ -20,7 +20,7 @@ static void
 drv_gpio_init()
 {
 	gpio_config_t input = {
-			.intr_type = GPIO_INTR_NEGEDGE,
+			.intr_type = GPIO_INTR_ANYEDGE,
 			.pin_bit_mask = (1UL << PIN_KEY_USER),
 			.mode = GPIO_MODE_INPUT,
 			.pull_up_en = GPIO_PULLUP_ENABLE,
@@ -49,15 +49,20 @@ btn_proc_task(void *arg)
 		}
 
 		val = gpio_get_level(num);
-		ESP_LOGV(TAG, "GPIO: %d=%d", num, val);
-		if (val) goto next;
+		ESP_LOGI(TAG, "GPIO: %d=%d", num, val);
 
-		if (qrcode_shown) {
-			lcd_clear_fg();
+		if (!val) {
+			btn_down_ticks = xTaskGetTickCount();
 		} else {
-			lcd_draw_fg(&pic_qrcode_start);
+			TickType_t ticks = xTaskGetTickCount();
+			uint32_t hold_ms = (ticks - btn_down_ticks) * portTICK_PERIOD_MS;
+			ESP_LOGI(TAG, "Button hold: %d ms", hold_ms);
+
+			if (hold_ms > 3000) {
+				wlan_reset();
+				lcd_draw_fg((uint8_t *)pic_qrcode_start);
+			}
 		}
-		qrcode_shown = !qrcode_shown;
 
 	next:
 		vTaskDelay(10);
