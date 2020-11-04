@@ -12,6 +12,7 @@ set(COMPONENT_SRCS
     "earth.c"
     "decode_image.c"
     "blec.c"
+    "userdata.c"
 )
 
 register_component()

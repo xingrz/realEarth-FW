@@ -29,12 +29,16 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 
+#define WLAN_SSID_LEN 33
+#define WLAN_PASSWORD_LEN 64
+
 #include "wlan.h"
 #include "hspi.h"
 #include "gc9a01.h"
 #include "earth.h"
 #include "decode_image.h"
 #include "blec.h"
+#include "userdata.h"
 
 #include "task_lcd.h"
 #include "task_btn.h"

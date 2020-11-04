@@ -76,8 +76,8 @@ ble_handle_cmd(uint16_t cmd, void *data, uint16_t len)
 {
 	switch (cmd) {
 		case CMD_SETUP: {
-			char ssid[33];
-			char password[64];
+			char ssid[WLAN_SSID_LEN];
+			char password[WLAN_PASSWORD_LEN];
 
 			uint8_t ssid_len = ((uint8_t *)data)[0];
 			if (ssid_len > sizeof(ssid) - 1) break;

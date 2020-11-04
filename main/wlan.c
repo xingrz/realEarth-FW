@@ -9,13 +9,9 @@ static esp_netif_t *s_esp_netif = NULL;
 static esp_ip4_addr_t s_ip_addr;
 static xSemaphoreHandle s_semph_get_ip_addrs;
 
-static char wlan_ssid[33];
-static bool wlan_connected = false;
-
 static void
 on_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-	wlan_connected = false;
 	ESP_LOGI(TAG, "Wi-Fi disconnected, trying to reconnect...");
 	ESP_ERROR_CHECK(esp_wifi_connect());
 }
@@ -26,7 +22,6 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 	ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
 	memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
 	xSemaphoreGive(s_semph_get_ip_addrs);
-	wlan_connected = true;
 }
 
 static void
@@ -81,11 +76,6 @@ wlan_connect(char *ssid, char *password)
 	if (s_semph_get_ip_addrs != NULL) {
 		return ESP_ERR_INVALID_STATE;
 	}
-	if (strcmp(wlan_ssid, ssid) == 0) {
-		ESP_LOGI(TAG, "Already configured %s, ignored", ssid);
-		return ESP_OK;
-	}
-	strcpy(wlan_ssid, ssid);
 	start(ssid, password);
 	ESP_ERROR_CHECK(esp_register_shutdown_handler(&stop));
 	ESP_LOGI(TAG, "Waiting for IP(s)");
@@ -100,7 +90,6 @@ wlan_disconnect(void)
 	if (s_semph_get_ip_addrs == NULL) {
 		return ESP_ERR_INVALID_STATE;
 	}
-	memset(wlan_ssid, 0, sizeof(wlan_ssid));
 	vSemaphoreDelete(s_semph_get_ip_addrs);
 	s_semph_get_ip_addrs = NULL;
 	stop();

@@ -8,6 +8,8 @@ app_main(void)
 	ESP_ERROR_CHECK(nvs_flash_init());
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 
+	ESP_ERROR_CHECK(userdata_init());
+
 	BaseType_t ret = pdFALSE;
 	EventGroupHandle_t boot = xEventGroupCreate();
 
