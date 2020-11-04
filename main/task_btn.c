@@ -5,8 +5,9 @@ static const char *TAG = "task_btn";
 #define PIN_KEY_USER GPIO_NUM_0
 
 static xQueueHandle btn_q = NULL;
+static bool qrcode_shown = false;
 
-static uint16_t bl_step = -1;
+extern const uint8_t pic_qrcode_start[] asm("_binary_pic_qrcode_jpg_start");
 
 static void
 drv_gpio_event(void *arg)
@@ -43,20 +44,23 @@ btn_proc_task(void *arg)
 	uint32_t num;
 	int val;
 	while (1) {
-		if (xQueueReceive(btn_q, &num, portMAX_DELAY)) {
-			val = gpio_get_level(num);
-			ESP_LOGV(TAG, "GPIO: %d=%d", num, val);
-			if (!val) {
-				uint16_t bl_lvl = gc9a01_get_backlight();
-				if (bl_lvl >= GC9A01_BACKLIGHT_MAX) {
-					bl_step = -1;
-				} else if (bl_lvl <= 0) {
-					bl_step = 1;
-				}
-				bl_lvl += bl_step;
-				gc9a01_set_backlight(bl_lvl);
-			}
+		if (xQueueReceive(btn_q, &num, portMAX_DELAY) != pdPASS) {
+			goto next;
 		}
+
+		val = gpio_get_level(num);
+		ESP_LOGV(TAG, "GPIO: %d=%d", num, val);
+		if (val) goto next;
+
+		if (qrcode_shown) {
+			lcd_clear_fg();
+		} else {
+			lcd_draw_fg(&pic_qrcode_start);
+		}
+		qrcode_shown = !qrcode_shown;
+
+	next:
+		vTaskDelay(10);
 	}
 
 	vTaskDelete(NULL);

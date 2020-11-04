@@ -4,6 +4,8 @@
 #include "common.h"
 
 void lcd_proc_task(void *arg);
-void lcd_draw(uint8_t *jpeg);
+void lcd_draw_bg(uint8_t *jpeg);
+void lcd_draw_fg(uint8_t *jpeg);
+void lcd_clear_fg(void);
 
 #endif  // _CLOCK_TASK_LCD_

@@ -7,6 +7,10 @@ static const char *TAG = "task_lcd";
 static xQueueHandle lcd_q = NULL;
 static uint16_t pixels_buf[SCREEN_SIZE * DRAW_RECT_SIZE] = {0};
 
+static uint8_t *lcd_bg = NULL;
+
+extern const uint8_t pic_loading_start[] asm("_binary_pic_loading_jpg_start");
+
 static inline uint16_t
 rgb888_to_rgb565(uint8_t *in)
 {
@@ -41,7 +45,7 @@ lcd_proc_task(void *arg)
 
 	ESP_LOGI(TAG, "Init LCD...");
 	gc9a01_init();
-	gc9a01_fill(0x0000);
+	lcd_draw_bg(&pic_loading_start);
 
 	ESP_LOGI(TAG, "Enable backlight...");
 	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
@@ -69,7 +73,22 @@ lcd_proc_task(void *arg)
 }
 
 void
-lcd_draw(uint8_t *jpeg)
+lcd_draw_bg(uint8_t *jpeg)
 {
-	xQueueSendToBack(lcd_q, &jpeg, 0);
+	lcd_bg = jpeg;
+	xQueueSendToBack(lcd_q, &jpeg, portMAX_DELAY);
+}
+
+void
+lcd_draw_fg(uint8_t *jpeg)
+{
+	xQueueSendToBack(lcd_q, &jpeg, portMAX_DELAY);
+}
+
+void
+lcd_clear_fg(void)
+{
+	if (lcd_bg != NULL) {
+		xQueueSendToBack(lcd_q, &lcd_bg, portMAX_DELAY);
+	}
 }

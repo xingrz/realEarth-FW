@@ -15,4 +15,9 @@ set(COMPONENT_SRCS
     "userdata.c"
 )
 
+set(COMPONENT_EMBED_FILES
+    "pic_loading.jpg"
+    "pic_qrcode.jpg"
+)
+
 register_component()

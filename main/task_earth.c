@@ -38,7 +38,7 @@ earth_proc_task(void *arg)
 		}
 
 		ESP_LOGI(TAG, "Fetched %d bytes", fetched);
-		lcd_draw(jpeg_buf);
+		lcd_draw_bg(jpeg_buf);
 
 		if (timeinfo.tm_hour >= 20) {
 			gc9a01_set_backlight(0);
