@@ -5,15 +5,25 @@
 
 static const char *TAG = "wlan";
 
+#define MAX_ALLOW_FAILS 5
+
 static esp_netif_t *s_esp_netif = NULL;
 static esp_ip4_addr_t s_ip_addr;
-static xSemaphoreHandle s_semph_get_ip_addrs;
+static bool s_connecting = false;
+static uint8_t s_fails = 0;
+static xSemaphoreHandle s_semph_result;
 
 static void
 on_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-	ESP_LOGI(TAG, "Wi-Fi disconnected, trying to reconnect...");
-	ESP_ERROR_CHECK(esp_wifi_connect());
+	wifi_event_sta_disconnected_t *event = (wifi_event_sta_disconnected_t *)event_data;
+	ESP_LOGW(TAG, "Wi-Fi disconnected for reason: %d", event->reason);
+	s_fails++;
+	if (s_fails < MAX_ALLOW_FAILS) {
+		ESP_ERROR_CHECK(esp_wifi_connect());
+	} else if (s_connecting) {
+		xSemaphoreGive(s_semph_result);
+	}
 }
 
 static void
@@ -21,7 +31,9 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 {
 	ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
 	memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
-	xSemaphoreGive(s_semph_get_ip_addrs);
+	s_fails = 0;
+	s_connecting = false;
+	xSemaphoreGive(s_semph_result);
 }
 
 static void
@@ -45,8 +57,6 @@ start(char *ssid, char *password)
 	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
 	ESP_ERROR_CHECK(esp_wifi_start());
 	ESP_ERROR_CHECK(esp_wifi_connect());
-
-	s_semph_get_ip_addrs = xSemaphoreCreateBinary();
 }
 
 static void
@@ -70,26 +80,44 @@ stop(void)
 esp_err_t
 wlan_connect(char *ssid, char *password)
 {
-	if (s_semph_get_ip_addrs != NULL) {
+	if (s_semph_result != NULL) {
 		return ESP_ERR_INVALID_STATE;
 	}
+
+	s_semph_result = xSemaphoreCreateBinary();
+
+	s_fails = 0;
+	s_connecting = true;
+
 	start(ssid, password);
 	ESP_ERROR_CHECK(esp_register_shutdown_handler(&stop));
+
 	ESP_LOGI(TAG, "Waiting for IP(s)");
-	xSemaphoreTake(s_semph_get_ip_addrs, portMAX_DELAY);
-	ESP_LOGI(TAG, "IPv4 address: " IPSTR, IP2STR(&s_ip_addr));
-	return ESP_OK;
+	xSemaphoreTake(s_semph_result, portMAX_DELAY);
+	vSemaphoreDelete(s_semph_result);
+	s_semph_result = NULL;
+
+	if (s_fails == 0) {
+		ESP_LOGI(TAG, "IPv4 address: " IPSTR, IP2STR(&s_ip_addr));
+		return ESP_OK;
+	} else {
+		ESP_LOGW(TAG, "Failed connecting to %s", ssid);
+		stop();
+		ESP_ERROR_CHECK(esp_unregister_shutdown_handler(&stop));
+		return ESP_ERR_WIFI_NOT_CONNECT;
+	}
 }
 
 esp_err_t
 wlan_disconnect(void)
 {
-	if (s_semph_get_ip_addrs == NULL) {
-		return ESP_ERR_INVALID_STATE;
+	if (s_semph_result != NULL) {
+		vSemaphoreDelete(s_semph_result);
+		s_semph_result = NULL;
 	}
-	vSemaphoreDelete(s_semph_get_ip_addrs);
-	s_semph_get_ip_addrs = NULL;
-	stop();
-	ESP_ERROR_CHECK(esp_unregister_shutdown_handler(&stop));
+	if (s_esp_netif != NULL) {
+		stop();
+		ESP_ERROR_CHECK(esp_unregister_shutdown_handler(&stop));
+	}
 	return ESP_OK;
 }

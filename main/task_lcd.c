@@ -75,13 +75,9 @@ lcd_proc_task(void *arg)
 }
 
 void
-lcd_init(void)
+lcd_show_offline(void)
 {
-	if (wlan_configured()) {
-		lcd_draw_bg((uint8_t *)pic_loading_start);
-	} else {
-		lcd_draw_bg((uint8_t *)pic_offline_start);
-	}
+	lcd_draw_bg((uint8_t *)pic_offline_start);
 }
 
 void

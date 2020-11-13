@@ -34,8 +34,6 @@ app_main(void)
 	xEventGroupWaitBits(boot, BOOT_TASK_ALL, pdFALSE, pdTRUE, portMAX_DELAY);
 	ESP_LOGI(TAG, "SYSTEM READY");
 
-	lcd_init();
-
 	while (1) {
 		vTaskDelay(10);
 	}

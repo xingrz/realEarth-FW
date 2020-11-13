@@ -4,7 +4,7 @@
 #include "common.h"
 
 void lcd_proc_task(void *arg);
-void lcd_init(void);
+void lcd_show_offline(void);
 void lcd_show_loading(void);
 void lcd_show_qrcode(void);
 void lcd_draw_bg(uint8_t *jpeg);
