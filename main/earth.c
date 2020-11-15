@@ -1,5 +1,9 @@
 #include "earth.h"
 
+#ifndef EARTH_URL
+#define EARTH_URL "http://localhost/%d/%d/%d/%d/%d.jpg"
+#endif
+
 static const char *TAG = "earth";
 
 typedef struct {
@@ -42,9 +46,9 @@ earth_fetch(time_t when, uint8_t *buf, uint32_t limit)
 	when -= 40 * 60;
 	localtime_r(&when, &timeinfo);
 
-	sprintf(url, CONFIG_PROJECT_EARTH_URL, (1900 + timeinfo.tm_year), (timeinfo.tm_mon + 1),
-			timeinfo.tm_mday, timeinfo.tm_hour, (timeinfo.tm_min / 10 * 10));
-	ESP_LOGI(TAG, "Requesting %s...", url);
+	sprintf(url, EARTH_URL, (1900 + timeinfo.tm_year), (timeinfo.tm_mon + 1), timeinfo.tm_mday,
+			timeinfo.tm_hour, (timeinfo.tm_min / 10 * 10));
+	ESP_LOGI(TAG, "Requesting %s", url);
 
 	earth_http_ctx_t ctx = {
 			.buf = buf,

@@ -22,3 +22,9 @@ set(COMPONENT_EMBED_FILES
 )
 
 register_component()
+
+if(NOT $ENV{EARTH_URL} STREQUAL "")
+    target_compile_options(${COMPONENT_LIB} PRIVATE
+        -DEARTH_URL="$ENV{EARTH_URL}"
+    )
+endif()

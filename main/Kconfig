@@ -1,8 +1,0 @@
-menu "Earth"
-    config PROJECT_EARTH_URL
-        string "Earth URL"
-        default "http://localhost/%d/%d/%d/%d/%d.jpg"
-        help
-            URL to fetch earth pictures from.
-
-endmenu
