@@ -7,9 +7,9 @@ static const char *TAG = "wlan";
 
 #define MAX_ALLOW_FAILS 5
 
-static esp_netif_t *s_esp_netif = NULL;
 static esp_ip4_addr_t s_ip_addr;
 static bool s_connecting = false;
+static bool s_disconnecting = false;
 static uint8_t s_fails = 0;
 static xSemaphoreHandle s_semph_result;
 
@@ -18,6 +18,9 @@ on_wifi_disconnect(void *arg, esp_event_base_t event_base, int32_t event_id, voi
 {
 	wifi_event_sta_disconnected_t *event = (wifi_event_sta_disconnected_t *)event_data;
 	ESP_LOGW(TAG, "Wi-Fi disconnected for reason: %d", event->reason);
+	if (s_disconnecting) {
+		return;
+	}
 	s_fails++;
 	if (s_fails < MAX_ALLOW_FAILS) {
 		ESP_ERROR_CHECK(esp_wifi_connect());
@@ -39,16 +42,13 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 static void
 start(char *ssid, char *password)
 {
-	esp_netif_inherent_config_t esp_netif_config = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
-	s_esp_netif = esp_netif_create_wifi(WIFI_IF_STA, &esp_netif_config);
-
-	esp_wifi_set_default_wifi_sta_handlers();
+	s_fails = 0;
+	s_connecting = true;
 
 	ESP_ERROR_CHECK(esp_event_handler_register(
 			WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, NULL));
 	ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
 
-	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
 	wifi_config_t wifi_config = {.sta = {.ssid = {0}, .password = {0}}};
 	strcpy((char *)wifi_config.sta.ssid, ssid);
 	strcpy((char *)wifi_config.sta.password, password);
@@ -62,19 +62,34 @@ start(char *ssid, char *password)
 static void
 stop(void)
 {
+	s_disconnecting = true;
+
 	ESP_ERROR_CHECK(esp_event_handler_unregister(
 			WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect));
 	ESP_ERROR_CHECK(esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip));
 
-	esp_err_t err = esp_wifi_stop();
-	if (err == ESP_ERR_WIFI_NOT_INIT) {
-		return;
+	esp_wifi_stop();
+}
+
+esp_err_t
+wlan_init(void)
+{
+	esp_err_t ret = nvs_flash_init();
+	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+		ESP_ERROR_CHECK(nvs_flash_erase());
+		ret = nvs_flash_init();
 	}
-	ESP_ERROR_CHECK(err);
-	ESP_ERROR_CHECK(esp_wifi_deinit());
-	ESP_ERROR_CHECK(esp_wifi_clear_default_wifi_driver_and_handlers(s_esp_netif));
-	esp_netif_destroy(s_esp_netif);
-	s_esp_netif = NULL;
+	ESP_ERROR_CHECK(ret);
+
+	ESP_ERROR_CHECK(esp_netif_init());
+
+	esp_netif_create_default_wifi_sta();
+
+	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+
+	return ESP_OK;
 }
 
 esp_err_t
@@ -86,11 +101,7 @@ wlan_connect(char *ssid, char *password)
 
 	s_semph_result = xSemaphoreCreateBinary();
 
-	s_fails = 0;
-	s_connecting = true;
-
 	start(ssid, password);
-	ESP_ERROR_CHECK(esp_register_shutdown_handler(&stop));
 
 	ESP_LOGI(TAG, "Waiting for IP(s)");
 	xSemaphoreTake(s_semph_result, portMAX_DELAY);
@@ -103,7 +114,6 @@ wlan_connect(char *ssid, char *password)
 	} else {
 		ESP_LOGW(TAG, "Failed connecting to %s", ssid);
 		stop();
-		ESP_ERROR_CHECK(esp_unregister_shutdown_handler(&stop));
 		return ESP_ERR_WIFI_NOT_CONNECT;
 	}
 }
@@ -115,9 +125,6 @@ wlan_disconnect(void)
 		vSemaphoreDelete(s_semph_result);
 		s_semph_result = NULL;
 	}
-	if (s_esp_netif != NULL) {
-		stop();
-		ESP_ERROR_CHECK(esp_unregister_shutdown_handler(&stop));
-	}
+	stop();
 	return ESP_OK;
 }

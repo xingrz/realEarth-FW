@@ -22,13 +22,10 @@ wlan_proc_task(void *arg)
 {
 	wlan_q = xQueueCreate(3, sizeof(wlan_msg_t));
 
-	ESP_LOGI(TAG, "Init netif...");
-	ESP_ERROR_CHECK(esp_netif_init());
+	ESP_LOGI(TAG, "Init Wi-Fi...");
+	wlan_init();
 
 	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_WLAN);
-
-	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
 	userdata_t user = {0};
 	userdata_read(&user);
