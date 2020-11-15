@@ -89,7 +89,6 @@ build
 # lock files for examples and components
 dependencies.lock
 
-sdkconfig
 sdkconfig.old
 
 *.pem
