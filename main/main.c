@@ -19,6 +19,9 @@ app_main(void)
 	}
 	ESP_ERROR_CHECK(ret);
 
+	assert(pdPASS == xTaskCreate(lv_proc_task, "lv_proc_task", LV_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
+
 	assert(pdPASS == xTaskCreate(lcd_proc_task, "lcd_proc_task", LCD_PROC_STACK_SIZE, NULL,
 							 tskIDLE_PRIORITY + 1, NULL));
 
