@@ -12,4 +12,6 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
+#define COUNT(x) (sizeof(x) / sizeof(x[0]))
+
 #endif  // __REALEARTH_COMMON__

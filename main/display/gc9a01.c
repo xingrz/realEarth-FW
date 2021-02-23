@@ -2,20 +2,14 @@
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 
+#include "pinout.h"
 #include "gc9a01.h"
 #include "hspi.h"
-#include "pinout.h"
+#include "backlight.h"
 
-static const char *TAG = "gc9a01";
+#define TAG "gc9a01"
 
 #define HSPI_MAX_PIXELS (HSPI_MAX_LEN / sizeof(uint16_t))
-
-#define BLK_FADE_TIME 500
-
-#define COUNT(x) (sizeof(x) / sizeof(x[0]))
-
-static uint16_t blk_steps[GC9A01_BACKLIGHT_MAX + 1] = {2, 15, 31, 63, 127};
-static uint16_t blk_level = GC9A01_BACKLIGHT_MAX;
 
 static struct {
 	uint8_t cmd;
@@ -91,37 +85,6 @@ drv_gpio_init()
 }
 
 static void
-drv_pwm_init()
-{
-	ESP_LOGV(TAG, "drv_pwm_init enter");
-
-	ledc_timer_config_t timer = {
-			.duty_resolution = BLK_LEDC_RES,
-			.freq_hz = 5000,
-			.speed_mode = BLK_LEDC_MODE,
-			.timer_num = BLK_LEDC_TIMER,
-			.clk_cfg = LEDC_AUTO_CLK,
-	};
-
-	ledc_timer_config(&timer);
-
-	ledc_channel_config_t channel = {
-			.channel = BLK_LEDC_CHANNEL,
-			.duty = 0,
-			.gpio_num = PIN_BLK,
-			.speed_mode = BLK_LEDC_MODE,
-			.hpoint = 0,
-			.timer_sel = BLK_LEDC_TIMER,
-	};
-
-	ledc_channel_config(&channel);
-
-	ledc_fade_func_install(0);
-
-	ESP_LOGV(TAG, "drv_pwm_init exit");
-}
-
-static void
 write_reg(uint8_t val)
 {
 	gpio_set_level(PIN_LCD_DC, 0);
@@ -154,7 +117,6 @@ gc9a01_init(void)
 {
 	ESP_LOGI(TAG, "Init interfaces...");
 	drv_gpio_init();
-	drv_pwm_init();
 	hspi_init();
 
 	ESP_LOGI(TAG, "Reset panel...");
@@ -180,21 +142,6 @@ gc9a01_init(void)
 	write_reg(0x29);
 
 	vTaskDelay(120 / portTICK_PERIOD_MS);
-}
-
-uint16_t
-gc9a01_get_backlight(void)
-{
-	return blk_level;
-}
-
-void
-gc9a01_set_backlight(uint16_t level)
-{
-	ESP_LOGI(TAG, "Set backlight: %d", level);
-	ledc_set_fade_with_time(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, blk_steps[level], BLK_FADE_TIME);
-	ledc_fade_start(BLK_LEDC_MODE, BLK_LEDC_CHANNEL, LEDC_FADE_NO_WAIT);
-	blk_level = level;
 }
 
 void

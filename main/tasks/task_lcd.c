@@ -4,6 +4,7 @@
 #include "tasks.h"
 #include "task_lcd.h"
 #include "gc9a01.h"
+#include "backlight.h"
 #include "decode_image.h"
 
 #define TAG "task_lcd"
@@ -51,12 +52,16 @@ lcd_proc_task(void *arg)
 {
 	lcd_q = xQueueCreate(3, sizeof(uint8_t *));
 
+	backlight_init();
+
 	ESP_LOGI(TAG, "Init LCD...");
 	gc9a01_init();
 	gc9a01_fill(0x0000);
 
+	vTaskDelay(500 / portTICK_PERIOD_MS);
+
 	ESP_LOGI(TAG, "Enable backlight...");
-	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
+	backlight_set(BACKLIGHT_MAX);
 
 	uint8_t *jpeg = NULL;
 	while (1) {

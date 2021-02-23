@@ -7,7 +7,7 @@
 #include "task_lcd.h"
 #include "wlan.h"
 #include "earth.h"
-#include "gc9a01.h"
+#include "backlight.h"
 
 #define TAG "task_earth"
 
@@ -53,23 +53,23 @@ earth_proc_task(void *arg)
 		lcd_draw_bg(jpeg_buf);
 
 		if (timeinfo.tm_hour >= 20) {
-			gc9a01_set_backlight(0);
+			backlight_set(0);
 		} else if (timeinfo.tm_hour >= 18) {
-			gc9a01_set_backlight(1);
+			backlight_set(1);
 		} else if (timeinfo.tm_hour >= 16) {
-			gc9a01_set_backlight(2);
+			backlight_set(2);
 		} else if (timeinfo.tm_hour >= 14) {
-			gc9a01_set_backlight(3);
+			backlight_set(3);
 		} else if (timeinfo.tm_hour >= 10) {
-			gc9a01_set_backlight(4);
+			backlight_set(4);
 		} else if (timeinfo.tm_hour >= 8) {
-			gc9a01_set_backlight(3);
+			backlight_set(3);
 		} else if (timeinfo.tm_hour >= 6) {
-			gc9a01_set_backlight(2);
+			backlight_set(2);
 		} else if (timeinfo.tm_hour >= 4) {
-			gc9a01_set_backlight(1);
+			backlight_set(1);
 		} else {
-			gc9a01_set_backlight(0);
+			backlight_set(0);
 		}
 
 	next:

@@ -5,7 +5,7 @@
 
 #include "tasks.h"
 #include "task_lcd.h"
-#include "gc9a01.h"
+#include "backlight.h"
 #include "wlan.h"
 #include "blec.h"
 
@@ -52,7 +52,7 @@ btn_on_long_pressed(void)
 	ESP_LOGI(TAG, "Long pressed");
 	wlan_reset();
 	lcd_show_qrcode();
-	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
+	backlight_set(BACKLIGHT_MAX);
 	blec_adv_start();
 }
 
