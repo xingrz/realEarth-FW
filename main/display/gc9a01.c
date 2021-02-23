@@ -13,6 +13,8 @@
 #define TRANS_CMD (void *)0
 #define TRANS_DATA (void *)1
 
+#define GC9A01_FLAP 1
+
 typedef struct {
 	uint16_t start;
 	uint16_t end;
@@ -43,7 +45,11 @@ static struct {
 		{0x8E, 1, {0xFF}},
 		{0x8F, 1, {0xFF}},
 		{0xB6, 2, {0x00, 0x20}},
+#if GC9A01_FLAP
+		{0x36, 1, {0x08 | 0x40}},
+#else
 		{0x36, 1, {0x08}},
+#endif
 		{0x3A, 1, {0x05}},
 		{0x90, 4, {0x08, 0x08, 0x08, 0x08}},
 		{0xBD, 1, {0x06}},
