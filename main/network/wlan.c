@@ -40,7 +40,7 @@ on_got_ip(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_
 }
 
 static void
-start(char *ssid, char *password)
+start(void)
 {
 	s_fails = 0;
 	s_connecting = true;
@@ -49,12 +49,7 @@ start(char *ssid, char *password)
 			WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, NULL));
 	ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
 
-	wifi_config_t wifi_config = {.sta = {.ssid = {0}, .password = {0}}};
-	strcpy((char *)wifi_config.sta.ssid, ssid);
-	strcpy((char *)wifi_config.sta.password, password);
-	ESP_LOGI(TAG, "Connecting to %s...", wifi_config.sta.ssid);
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
 	ESP_ERROR_CHECK(esp_wifi_start());
 	ESP_ERROR_CHECK(esp_wifi_connect());
 }
@@ -74,26 +69,19 @@ stop(void)
 esp_err_t
 wlan_init(void)
 {
-	esp_err_t ret = nvs_flash_init();
-	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
-	}
-	ESP_ERROR_CHECK(ret);
-
 	ESP_ERROR_CHECK(esp_netif_init());
 
 	esp_netif_create_default_wifi_sta();
 
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
 
 	return ESP_OK;
 }
 
 esp_err_t
-wlan_connect(char *ssid, char *password)
+wlan_connect()
 {
 	if (s_semph_result != NULL) {
 		return ESP_ERR_INVALID_STATE;
@@ -101,7 +89,7 @@ wlan_connect(char *ssid, char *password)
 
 	s_semph_result = xSemaphoreCreateBinary();
 
-	start(ssid, password);
+	start();
 
 	ESP_LOGI(TAG, "Waiting for IP(s)");
 	xSemaphoreTake(s_semph_result, portMAX_DELAY);
@@ -112,19 +100,46 @@ wlan_connect(char *ssid, char *password)
 		ESP_LOGI(TAG, "IPv4 address: " IPSTR, IP2STR(&s_ip_addr));
 		return ESP_OK;
 	} else {
-		ESP_LOGW(TAG, "Failed connecting to %s", ssid);
+		ESP_LOGW(TAG, "Failed connecting");
 		stop();
 		return ESP_ERR_WIFI_NOT_CONNECT;
 	}
 }
 
 esp_err_t
-wlan_disconnect(void)
+wlan_set(const char *ssid, const char *password)
+{
+	ESP_LOGI(TAG, "Connecting to %s...", ssid);
+	wifi_config_t config = {0};
+	strcpy((char *)config.sta.ssid, ssid);
+	strcpy((char *)config.sta.password, password);
+	return esp_wifi_set_config(ESP_IF_WIFI_STA, &config);
+}
+
+esp_err_t
+wlan_reset(void)
 {
 	if (s_semph_result != NULL) {
 		vSemaphoreDelete(s_semph_result);
 		s_semph_result = NULL;
 	}
 	stop();
-	return ESP_OK;
+
+	wifi_config_t config = {0};
+	return esp_wifi_set_config(ESP_IF_WIFI_STA, &config);
+}
+
+bool
+wlan_configured(char *ssid)
+{
+	wifi_config_t config = {0};
+	esp_wifi_get_config(ESP_IF_WIFI_STA, &config);
+	if (strlen((const char *)config.sta.ssid) > 0) {
+		if (ssid != NULL) {
+			strcpy(ssid, (const char *)config.sta.ssid);
+		}
+		return true;
+	} else {
+		return false;
+	}
 }

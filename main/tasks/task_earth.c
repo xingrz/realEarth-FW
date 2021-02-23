@@ -13,7 +13,7 @@ earth_proc_task(void *arg)
 	struct tm timeinfo;
 
 	while (1) {
-		if (!wlan_configured()) {
+		if (!wlan_configured(NULL)) {
 			vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
 			continue;
 		}

@@ -7,7 +7,6 @@ static xQueueHandle wlan_q = NULL;
 
 typedef enum {
 	e_wlan_set = 1,
-	e_wlan_unset = 2,
 } wlan_msg_e;
 
 typedef struct {
@@ -26,14 +25,10 @@ wlan_proc_task(void *arg)
 	ESP_LOGI(TAG, "Init Wi-Fi...");
 	wlan_init();
 
-	userdata_t user = {0};
-	userdata_read(&user);
-	if (strlen(user.ssid) > 0) {
+	if (wlan_configured(wlan_ssid)) {
 		lcd_show_loading();
-		ESP_LOGI(TAG, "Read stored Wi-Fi ssid: %s, password: %s", user.ssid, user.password);
-		if (wlan_connect(user.ssid, user.password) == ESP_OK) {
+		if (wlan_connect() == ESP_OK) {
 			ESP_LOGI(TAG, "Wi-Fi connected");
-			strcpy(wlan_ssid, user.ssid);
 		} else {
 			lcd_show_offline();
 			ESP_LOGI(TAG, "Wi-Fi not connectable");
@@ -52,13 +47,8 @@ wlan_proc_task(void *arg)
 		switch (msg.what) {
 			case e_wlan_set:
 				ESP_LOGI(TAG, "Connecting to Wi-Fi \"%s\"...", msg.ssid);
-				wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-				ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-				if (wlan_connect(msg.ssid, msg.password) == ESP_OK) {
-					userdata_t user = {0};
-					strcpy(user.ssid, msg.ssid);
-					strcpy(user.password, msg.password);
-					userdata_write(&user);
+				wlan_set(msg.ssid, msg.password);
+				if (wlan_connect() == ESP_OK) {
 					ESP_LOGI(TAG, "Settings stored");
 					vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 					esp_restart();
@@ -67,12 +57,6 @@ wlan_proc_task(void *arg)
 					ESP_LOGI(TAG, "Setting up failed");
 					memset(wlan_ssid, 0, sizeof(wlan_ssid));
 				}
-				break;
-			case e_wlan_unset:
-				ESP_LOGI(TAG, "Clearing Wi-Fi settings...");
-				wlan_disconnect();
-				userdata_clear();
-				memset(wlan_ssid, 0, sizeof(wlan_ssid));
 				break;
 		}
 
@@ -96,17 +80,4 @@ wlan_setup(char *ssid, char *password)
 	strcpy(msg.ssid, ssid);
 	strcpy(msg.password, password);
 	xQueueSend(wlan_q, &msg, 0);
-}
-
-void
-wlan_reset(void)
-{
-	wlan_msg_t msg = {.what = e_wlan_unset};
-	xQueueSend(wlan_q, &msg, 0);
-}
-
-bool
-wlan_configured(void)
-{
-	return strlen(wlan_ssid) > 0;
 }
