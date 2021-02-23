@@ -2,6 +2,9 @@
 #include "esp_event.h"
 #include "nvs_flash.h"
 #include "tasks.h"
+#include "lvgl.h"
+#include "disp.h"
+#include "backlight.h"
 
 #define TAG "main"
 
@@ -19,9 +22,19 @@ app_main(void)
 	}
 	ESP_ERROR_CHECK(ret);
 
+	backlight_init();
+	lv_init();
+	disp_init();
+
 	assert(pdPASS == xTaskCreate(lv_proc_task, "lv_proc_task", LV_PROC_STACK_SIZE, NULL,
 							 tskIDLE_PRIORITY + 1, NULL));
 
+	vTaskDelay(200 / portTICK_PERIOD_MS);
+
+	assert(pdPASS == xTaskCreate(ui_proc_task, "ui_proc_task", UI_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
+
+#if 0
 	assert(pdPASS == xTaskCreate(lcd_proc_task, "lcd_proc_task", LCD_PROC_STACK_SIZE, NULL,
 							 tskIDLE_PRIORITY + 1, NULL));
 
@@ -39,6 +52,9 @@ app_main(void)
 
 	assert(pdPASS == xTaskCreate(ble_proc_task, "ble_proc_task", BLE_PROC_STACK_SIZE, NULL,
 							 tskIDLE_PRIORITY + 1, NULL));
+#endif
 
 	ESP_LOGI(TAG, "SYSTEM READY");
+
+	backlight_set(BACKLIGHT_MAX);
 }

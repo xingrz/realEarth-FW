@@ -1,3 +1,4 @@
+#if 0
 #include "common.h"
 #include "freertos/queue.h"
 
@@ -121,3 +122,4 @@ lcd_clear_fg(void)
 		xQueueSendToBack(lcd_q, &lcd_bg, portMAX_DELAY);
 	}
 }
+#endif

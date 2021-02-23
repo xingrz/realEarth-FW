@@ -5,17 +5,18 @@
 
 #include "pinout.h"
 #include "gc9a01.h"
-#include "backlight.h"
 
 #define TAG "gc9a01"
-
-#define HSPI_MAX_LEN (256 * 2)
-#define HSPI_MAX_PIXELS (HSPI_MAX_LEN / sizeof(uint16_t))
 
 #define DMA_CHAN 2
 
 #define TRANS_CMD (void *)0
 #define TRANS_DATA (void *)1
+
+typedef struct {
+	uint16_t start;
+	uint16_t end;
+} gc9a01_write_addresses_t;
 
 static spi_device_handle_t spi;
 
@@ -99,12 +100,6 @@ write_data(void *buf, uint32_t len)
 }
 
 static void IRAM_ATTR
-write_data16(uint16_t val)
-{
-	hspi_write(&val, sizeof(uint16_t), TRANS_DATA);
-}
-
-static void IRAM_ATTR
 spi_pre_transfer_callback(spi_transaction_t *t)
 {
 	gpio_set_level(PIN_LCD_DC, (uint32_t)t->user);
@@ -131,14 +126,14 @@ gc9a01_init(void)
 			.sclk_io_num = PIN_LCD_CLK,
 			.quadwp_io_num = -1,
 			.quadhd_io_num = -1,
-			.max_transfer_sz = HSPI_MAX_LEN,
+			.max_transfer_sz = GC9A01_BUF_SIZE * sizeof(uint16_t),
 			.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_IOMUX_PINS,
 	};
 
 	ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &bus, DMA_CHAN));
 
 	spi_device_interface_config_t dev = {
-			.clock_speed_hz = SPI_MASTER_FREQ_8M,
+			.clock_speed_hz = SPI_MASTER_FREQ_16M,
 			.mode = 0,
 			.spics_io_num = PIN_LCD_CS,
 			.queue_size = 7,
@@ -168,60 +163,45 @@ gc9a01_init(void)
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
+#define SWAP(u16) (((u16 & 0xFF) << 8) | (u16 >> 8))
+
+static void
+gc9a01_prepare(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2)
+{
+	gc9a01_write_addresses_t addrs;
+
+	write_reg(0x2A);
+	addrs.start = SWAP(x1);
+	addrs.end = SWAP(x2);
+	write_data(&addrs, sizeof(addrs));
+
+	write_reg(0x2B);
+	addrs.start = SWAP(y1);
+	addrs.end = SWAP(y2);
+	write_data(&addrs, sizeof(addrs));
+}
+
+#if GC9A01_INIT_BLANK
 void
 gc9a01_fill(uint16_t color)
 {
-	write_reg(0x2A);
-	write_data16(0);
-	write_data16(SCREEN_SIZE - 1);
+	gc9a01_prepare(0, (uint8_t)(GC9A01_WIDTH - 1), 0, (uint8_t)(GC9A01_HEIGHT - 1));
 
-	write_reg(0x2B);
-	write_data16(0);
-	write_data16(SCREEN_SIZE - 1);
-
-	uint16_t pt[HSPI_MAX_PIXELS];
-	for (int i = 0; i < HSPI_MAX_PIXELS; i++) {
-		pt[i] = color;
-	}
+	uint16_t pt[GC9A01_WIDTH * 8];
+	memset(pt, color, sizeof(pt));
 
 	write_reg(0x2C);
-	for (int y = 0; y < SCREEN_SIZE; y++) {
-		// The number of regulators each line is 256 + 1
-		for (int x = 0; x < 256 / HSPI_MAX_PIXELS; x++) {
-			write_data(pt, HSPI_MAX_PIXELS * sizeof(uint16_t));
-		}
-		write_data(pt, 1 * sizeof(uint16_t));
+	for (int y = 0; y < GC9A01_HEIGHT; y += 8) {
+		write_data(pt, sizeof(pt));
 	}
 }
+#endif
 
 void
-gc9a01_draw(uint16_t *pixels)
+gc9a01_draw(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, uint16_t *src)
 {
-	gc9a01_draw_part_start();
-	gc9a01_draw_part_lines(pixels, SCREEN_SIZE);
-}
-
-void
-gc9a01_draw_part_start(void)
-{
-	write_reg(0x2A);
-	write_data16(0);
-	write_data16(SCREEN_SIZE - 1);
-
-	write_reg(0x2B);
-	write_data16(0);
-	write_data16(SCREEN_SIZE - 1);
+	gc9a01_prepare(x1, x2, y1, y2);
 
 	write_reg(0x2C);
-}
-
-void
-gc9a01_draw_part_lines(uint16_t *pixels, uint16_t lines)
-{
-	uint16_t padding[17] = {0x0000};
-	for (int y = 0; y < lines; y++) {
-		// The number of regulators each line is 256 + 1
-		write_data(pixels + y * SCREEN_SIZE, SCREEN_SIZE * sizeof(uint16_t));
-		write_data(padding, sizeof(padding));
-	}
+	write_data(src, (x2 - x1 + 1) * (y2 - y1 + 1) * sizeof(uint16_t));
 }
