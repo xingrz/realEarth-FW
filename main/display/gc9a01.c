@@ -1,15 +1,23 @@
 #include "common.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "driver/spi_master.h"
 
 #include "pinout.h"
 #include "gc9a01.h"
-#include "hspi.h"
 #include "backlight.h"
 
 #define TAG "gc9a01"
 
+#define HSPI_MAX_LEN (256 * 2)
 #define HSPI_MAX_PIXELS (HSPI_MAX_LEN / sizeof(uint16_t))
+
+#define DMA_CHAN 2
+
+#define TRANS_CMD (void *)0
+#define TRANS_DATA (void *)1
+
+static spi_device_handle_t spi;
 
 static struct {
 	uint8_t cmd;
@@ -66,10 +74,46 @@ static struct {
 		{0x21, 0, {}},
 };
 
-static void
-drv_gpio_init()
+static void IRAM_ATTR
+hspi_write(void *buf, uint32_t len, void *dc)
 {
-	ESP_LOGV(TAG, "drv_gpio_init enter");
+	spi_transaction_t trans = {
+			.tx_buffer = buf,
+			.length = len * 8,
+			.user = dc,
+	};
+
+	ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
+}
+
+static void IRAM_ATTR
+write_reg(uint8_t val)
+{
+	hspi_write(&val, sizeof(uint8_t), TRANS_CMD);
+}
+
+static void IRAM_ATTR
+write_data(void *buf, uint32_t len)
+{
+	hspi_write(buf, len, TRANS_DATA);
+}
+
+static void IRAM_ATTR
+write_data16(uint16_t val)
+{
+	hspi_write(&val, sizeof(uint16_t), TRANS_DATA);
+}
+
+static void IRAM_ATTR
+spi_pre_transfer_callback(spi_transaction_t *t)
+{
+	gpio_set_level(PIN_LCD_DC, (uint32_t)t->user);
+}
+
+void
+gc9a01_init(void)
+{
+	ESP_LOGI(TAG, "Init interfaces...");
 
 	gpio_config_t output = {
 			.intr_type = GPIO_INTR_DISABLE,
@@ -79,47 +123,32 @@ drv_gpio_init()
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 	};
 
-	gpio_config(&output);
+	ESP_ERROR_CHECK(gpio_config(&output));
 
-	ESP_LOGV(TAG, "drv_gpio_init exit");
-}
+	spi_bus_config_t bus = {
+			.mosi_io_num = PIN_LCD_MOSI,
+			.miso_io_num = -1,
+			.sclk_io_num = PIN_LCD_CLK,
+			.quadwp_io_num = -1,
+			.quadhd_io_num = -1,
+			.max_transfer_sz = HSPI_MAX_LEN,
+			.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_IOMUX_PINS,
+	};
 
-static void
-write_reg(uint8_t val)
-{
-	gpio_set_level(PIN_LCD_DC, 0);
-	hspi_write(&val, sizeof(uint8_t));
-}
+	ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &bus, DMA_CHAN));
 
-static void
-write_data(void *buf, uint32_t len)
-{
-	gpio_set_level(PIN_LCD_DC, 1);
-	hspi_write(buf, len);
-}
+	spi_device_interface_config_t dev = {
+			.clock_speed_hz = SPI_MASTER_FREQ_8M,
+			.mode = 0,
+			.spics_io_num = PIN_LCD_CS,
+			.queue_size = 7,
+			.pre_cb = spi_pre_transfer_callback,
+	};
 
-static void
-write_data8(uint8_t val)
-{
-	gpio_set_level(PIN_LCD_DC, 1);
-	hspi_write(&val, sizeof(uint8_t));
-}
-
-static void
-write_data16(uint16_t val)
-{
-	gpio_set_level(PIN_LCD_DC, 1);
-	hspi_write(&val, sizeof(uint16_t));
-}
-
-void
-gc9a01_init(void)
-{
-	ESP_LOGI(TAG, "Init interfaces...");
-	drv_gpio_init();
-	hspi_init();
+	ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &dev, &spi));
 
 	ESP_LOGI(TAG, "Reset panel...");
+
 	gpio_set_level(PIN_LCD_RST, 0);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(PIN_LCD_RST, 1);
@@ -132,16 +161,11 @@ gc9a01_init(void)
 			write_data(gc9a01_reg_conf[i].data, gc9a01_reg_conf[i].len);
 		}
 	}
-
-	vTaskDelay(120 / portTICK_PERIOD_MS);
-
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	write_reg(0x11);
-
-	vTaskDelay(120 / portTICK_PERIOD_MS);
-
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	write_reg(0x29);
-
-	vTaskDelay(120 / portTICK_PERIOD_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
 void
