@@ -36,9 +36,5 @@ ntp_proc_task(void *arg)
 	strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 	ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
 
-	while (1) {
-		vTaskDelay(10);
-	}
-
 	vTaskDelete(NULL);
 }

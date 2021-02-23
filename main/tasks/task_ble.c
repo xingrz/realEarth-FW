@@ -127,6 +127,5 @@ ble_proc_task(void *arg)
 {
 	blec_init(ble_recv_cb);
 	ESP_LOGI(TAG, "BLE init done");
-
 	vTaskDelete(NULL);
 }
