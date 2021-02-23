@@ -1,4 +1,10 @@
+#include "common.h"
+
 #include "tasks.h"
+#include "task_lcd.h"
+#include "task_wlan.h"
+#include "blec.h"
+#include "wlan.h"
 
 #define TAG "task_ble"
 

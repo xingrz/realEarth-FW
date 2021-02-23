@@ -1,8 +1,6 @@
 #ifndef __REALEARTH_TASKS__
 #define __REALEARTH_TASKS__
 
-#include "common.h"
-
 #define LCD_PROC_STACK_SIZE (6 * 1024)
 #define BTN_PROC_STACK_SIZE (2 * 1024)
 #define WLAN_PROC_STACK_SIZE (4 * 1024)

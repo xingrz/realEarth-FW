@@ -1,5 +1,10 @@
+#include "common.h"
+#include "freertos/queue.h"
+
 #include "tasks.h"
 #include "task_lcd.h"
+#include "gc9a01.h"
+#include "decode_image.h"
 
 #define TAG "task_lcd"
 

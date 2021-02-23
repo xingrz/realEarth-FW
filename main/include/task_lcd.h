@@ -1,7 +1,7 @@
 #ifndef __REALEARTH_TASK_LCD__
 #define __REALEARTH_TASK_LCD__
 
-#include "common.h"
+#include <stdint.h>
 
 void lcd_show_offline(void);
 void lcd_show_loading(void);

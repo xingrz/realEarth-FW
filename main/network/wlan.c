@@ -1,7 +1,12 @@
-#include "wlan.h"
-
+#include "common.h"
+#include "nvs.h"
+#include "esp_wifi.h"
+#include "esp_netif.h"
+#include "esp_event.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+
+#include "wlan.h"
 
 static const char *TAG = "wlan";
 

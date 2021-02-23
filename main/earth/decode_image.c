@@ -8,6 +8,7 @@ Keep in mind that the decoder library cannot handle progressive files (will give
 format if you want to use a different image file.
 */
 
+#include "common.h"
 #include "decode_image.h"
 #include "tjpgd.h"
 

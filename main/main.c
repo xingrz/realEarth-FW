@@ -1,4 +1,7 @@
 #include "common.h"
+#include "esp_event.h"
+#include "nvs_flash.h"
+#include "tasks.h"
 
 #define TAG "main"
 

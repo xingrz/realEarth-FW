@@ -1,7 +1,8 @@
 #ifndef __REALEARTH_DECODE_IMAGE__
 #define __REALEARTH_DECODE_IMAGE__
 
-#include "common.h"
+#include <stdint.h>
+#include "esp_err.h"
 
 typedef void (*decode_cb)(
 		uint8_t *in, uint16_t left, uint16_t right, uint16_t top, uint16_t bottom);

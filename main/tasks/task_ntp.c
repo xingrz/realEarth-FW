@@ -1,3 +1,9 @@
+#include <time.h>
+#include <sys/time.h>
+
+#include "common.h"
+#include "esp_sntp.h"
+
 #include "tasks.h"
 
 #define TAG "task_ntp"

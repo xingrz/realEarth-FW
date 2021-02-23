@@ -1,15 +1,7 @@
 #ifndef __REALEARTH_BLEC__
 #define __REALEARTH_BLEC__
 
-#include "common.h"
-
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
-#include "host/ble_hs.h"
-#include "host/ble_uuid.h"
-#include "host/util/util.h"
-#include "services/gap/ble_svc_gap.h"
-#include "services/gatt/ble_svc_gatt.h"
+#include <stdint.h>
 
 typedef void (*blec_recv_cb)(void *buf, uint16_t len);
 

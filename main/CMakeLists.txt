@@ -6,7 +6,7 @@ set(COMPONENT_SRCDIRS
     "tasks"
 )
 
-set(COMPONENT_ADD_INCLUDEDIRS "include")
+set(COMPONENT_ADD_INCLUDEDIRS "." "include")
 
 set(COMPONENT_EMBED_FILES
     "images/pic_offline.jpg"

@@ -1,14 +1,7 @@
 #ifndef __REALEARTH_GC9A01__
 #define __REALEARTH_GC9A01__
 
-#include "common.h"
-
-#define PIN_BLK GPIO_NUM_4
-#define PIN_CS GPIO_NUM_15
-#define PIN_DC GPIO_NUM_2
-#define PIN_RST GPIO_NUM_12
-#define PIN_MOSI GPIO_NUM_13
-#define PIN_CLK GPIO_NUM_14
+#include <stdint.h>
 
 #define BLK_LEDC_TIMER LEDC_TIMER_0
 #define BLK_LEDC_MODE LEDC_HIGH_SPEED_MODE

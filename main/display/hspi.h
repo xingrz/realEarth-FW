@@ -1,7 +1,7 @@
 #ifndef __REALEARTH_HSPI__
 #define __REALEARTH_HSPI__
 
-#include "common.h"
+#include <stdint.h>
 
 #define HSPI_MAX_LEN (256 * 2)
 

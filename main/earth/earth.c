@@ -1,3 +1,8 @@
+#include <time.h>
+#include <sys/time.h>
+
+#include "common.h"
+#include "esp_http_client.h"
 #include "earth.h"
 
 #ifndef EARTH_URL

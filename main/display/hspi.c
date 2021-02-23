@@ -1,4 +1,8 @@
+#include "common.h"
+#include "driver/spi_master.h"
+
 #include "hspi.h"
+#include "pinout.h"
 
 static const char *TAG = "hspi";
 
@@ -12,9 +16,9 @@ hspi_init(void)
 	ESP_LOGV(TAG, "hspi_init enter");
 
 	spi_bus_config_t bus = {
-			.mosi_io_num = PIN_MOSI,
+			.mosi_io_num = PIN_LCD_MOSI,
 			.miso_io_num = -1,
-			.sclk_io_num = PIN_CLK,
+			.sclk_io_num = PIN_LCD_CLK,
 			.quadwp_io_num = -1,
 			.quadhd_io_num = -1,
 			.max_transfer_sz = HSPI_MAX_LEN,
@@ -26,7 +30,7 @@ hspi_init(void)
 	spi_device_interface_config_t dev = {
 			.clock_speed_hz = SPI_MASTER_FREQ_8M,
 			.mode = 0,
-			.spics_io_num = PIN_CS,
+			.spics_io_num = PIN_LCD_CS,
 			.queue_size = 7,
 	};
 

@@ -1,4 +1,13 @@
+#include "common.h"
+
+#include "freertos/queue.h"
+#include "driver/gpio.h"
+
 #include "tasks.h"
+#include "task_lcd.h"
+#include "gc9a01.h"
+#include "wlan.h"
+#include "blec.h"
 
 #define TAG "task_btn"
 

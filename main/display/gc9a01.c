@@ -1,4 +1,10 @@
+#include "common.h"
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+
 #include "gc9a01.h"
+#include "hspi.h"
+#include "pinout.h"
 
 static const char *TAG = "gc9a01";
 
@@ -73,7 +79,7 @@ drv_gpio_init()
 
 	gpio_config_t output = {
 			.intr_type = GPIO_INTR_DISABLE,
-			.pin_bit_mask = (1UL << PIN_DC) | (1UL << PIN_RST),
+			.pin_bit_mask = (1UL << PIN_LCD_DC) | (1UL << PIN_LCD_RST),
 			.mode = GPIO_MODE_OUTPUT,
 			.pull_up_en = GPIO_PULLUP_ENABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -118,28 +124,28 @@ drv_pwm_init()
 static void
 write_reg(uint8_t val)
 {
-	gpio_set_level(PIN_DC, 0);
+	gpio_set_level(PIN_LCD_DC, 0);
 	hspi_write(&val, sizeof(uint8_t));
 }
 
 static void
 write_data(void *buf, uint32_t len)
 {
-	gpio_set_level(PIN_DC, 1);
+	gpio_set_level(PIN_LCD_DC, 1);
 	hspi_write(buf, len);
 }
 
 static void
 write_data8(uint8_t val)
 {
-	gpio_set_level(PIN_DC, 1);
+	gpio_set_level(PIN_LCD_DC, 1);
 	hspi_write(&val, sizeof(uint8_t));
 }
 
 static void
 write_data16(uint16_t val)
 {
-	gpio_set_level(PIN_DC, 1);
+	gpio_set_level(PIN_LCD_DC, 1);
 	hspi_write(&val, sizeof(uint16_t));
 }
 
@@ -152,9 +158,9 @@ gc9a01_init(void)
 	hspi_init();
 
 	ESP_LOGI(TAG, "Reset panel...");
-	gpio_set_level(PIN_RST, 0);
+	gpio_set_level(PIN_LCD_RST, 0);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
-	gpio_set_level(PIN_RST, 1);
+	gpio_set_level(PIN_LCD_RST, 1);
 
 	ESP_LOGI(TAG, "Init GC9A01...");
 

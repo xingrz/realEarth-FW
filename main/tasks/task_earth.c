@@ -1,4 +1,13 @@
+#include <time.h>
+#include <sys/time.h>
+
+#include "common.h"
+
 #include "tasks.h"
+#include "task_lcd.h"
+#include "wlan.h"
+#include "earth.h"
+#include "gc9a01.h"
 
 #define TAG "task_earth"
 

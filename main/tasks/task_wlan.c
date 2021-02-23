@@ -1,5 +1,11 @@
+#include "common.h"
+#include "freertos/queue.h"
+
 #include "tasks.h"
 #include "task_wlan.h"
+#include "task_lcd.h"
+#include "wlan.h"
+#include "gc9a01.h"
 
 #define TAG "task_wlan"
 
