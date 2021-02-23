@@ -24,7 +24,7 @@ hspi_init(void)
 	ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &bus, DMA_CHAN));
 
 	spi_device_interface_config_t dev = {
-			.clock_speed_hz = 120 * 1000 * 1000,
+			.clock_speed_hz = SPI_MASTER_FREQ_8M,
 			.mode = 0,
 			.spics_io_num = PIN_CS,
 			.queue_size = 7,
