@@ -1,5 +1,5 @@
-#ifndef _CLOCK_USERDATA_
-#define _CLOCK_USERDATA_
+#ifndef __REALEARTH_USERDATA__
+#define __REALEARTH_USERDATA__
 
 #include "common.h"
 
@@ -14,4 +14,4 @@ esp_err_t userdata_read(userdata_t *data);
 esp_err_t userdata_write(userdata_t *data);
 esp_err_t userdata_clear(void);
 
-#endif  // _CLOCK_USERDATA_
+#endif  // __REALEARTH_USERDATA__

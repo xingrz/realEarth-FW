@@ -1,6 +1,6 @@
-#include "task_ble.h"
+#include "tasks.h"
 
-static const char *TAG = "task_ble";
+#define TAG "task_ble"
 
 #define SETUP_MAGIC 0x0811
 
@@ -125,8 +125,6 @@ ble_handle_cmd(uint16_t cmd, void *data, uint16_t len)
 void
 ble_proc_task(void *arg)
 {
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_BLE);
-
 	blec_init(ble_recv_cb);
 	ESP_LOGI(TAG, "BLE init done");
 

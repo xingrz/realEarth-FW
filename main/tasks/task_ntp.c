@@ -1,6 +1,6 @@
-#include "task_ntp.h"
+#include "tasks.h"
 
-static const char *TAG = "task_ntp";
+#define TAG "task_ntp"
 
 static const char *NTP_SERVER = "ntp.aliyun.com";
 
@@ -27,8 +27,6 @@ ntp_proc_task(void *arg)
 	sntp_setservername(0, NTP_SERVER);
 	sntp_set_time_sync_notification_cb(time_sync_notification_cb);
 	sntp_init();
-
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_NTP);
 
 	time_t now;
 	struct tm timeinfo;

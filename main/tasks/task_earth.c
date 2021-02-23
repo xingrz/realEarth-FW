@@ -1,6 +1,6 @@
-#include "task_earth.h"
+#include "tasks.h"
 
-static const char *TAG = "task_earth";
+#define TAG "task_earth"
 
 // #define DEBUG_FORCE_NOON
 
@@ -11,8 +11,6 @@ earth_proc_task(void *arg)
 {
 	time_t now;
 	struct tm timeinfo;
-
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_EARTH);
 
 	while (1) {
 		if (!wlan_configured()) {

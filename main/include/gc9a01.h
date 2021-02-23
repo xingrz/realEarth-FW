@@ -1,5 +1,5 @@
-#ifndef _CLOCK_GC9A01_
-#define _CLOCK_GC9A01_
+#ifndef __REALEARTH_GC9A01__
+#define __REALEARTH_GC9A01__
 
 #include "common.h"
 
@@ -27,4 +27,4 @@ void gc9a01_draw(uint16_t *pixels);
 void gc9a01_draw_part_start(void);
 void gc9a01_draw_part_lines(uint16_t *pixels, uint16_t lines);
 
-#endif  // _CLOCK_GC9A01_
+#endif  // __REALEARTH_GC9A01__

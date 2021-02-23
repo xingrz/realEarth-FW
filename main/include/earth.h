@@ -1,8 +1,8 @@
-#ifndef _CLOCK_EARTH_
-#define _CLOCK_EARTH_
+#ifndef __REALEARTH_EARTH__
+#define __REALEARTH_EARTH__
 
 #include "common.h"
 
 uint32_t earth_fetch(time_t when, uint8_t *buf, uint32_t limit);
 
-#endif  // _CLOCK_EARTH_
+#endif  // __REALEARTH_EARTH__

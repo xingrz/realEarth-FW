@@ -1,5 +1,5 @@
-#ifndef _CLOCK_COMMON_
-#define _CLOCK_COMMON_
+#ifndef __REALEARTH_COMMON__
+#define __REALEARTH_COMMON__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +10,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include "freertos/event_groups.h"
 
 #include "driver/gpio.h"
 #include "driver/ledc.h"
@@ -40,22 +39,8 @@
 #include "blec.h"
 #include "userdata.h"
 
+#include "tasks.h"
 #include "task_lcd.h"
-#include "task_btn.h"
 #include "task_wlan.h"
-#include "task_ntp.h"
-#include "task_earth.h"
-#include "task_ble.h"
 
-// #define BIT(NB) (1 << (NB))
-#define BITS(HB, LB) ((2 << (HB)) - (1 << (LB)))
-
-#define BOOT_TASK_LCD BIT(0)
-#define BOOT_TASK_BTN BIT(1)
-#define BOOT_TASK_WLAN BIT(2)
-#define BOOT_TASK_NTP BIT(3)
-#define BOOT_TASK_EARTH BIT(4)
-#define BOOT_TASK_BLE BIT(5)
-#define BOOT_TASK_ALL BITS(5, 0)
-
-#endif  // _CLOCK_COMMON_
+#endif  // __REALEARTH_COMMON__

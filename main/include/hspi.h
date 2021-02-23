@@ -1,5 +1,5 @@
-#ifndef _CLOCK_HSPI_
-#define _CLOCK_HSPI_
+#ifndef __REALEARTH_HSPI__
+#define __REALEARTH_HSPI__
 
 #include "common.h"
 
@@ -9,4 +9,4 @@ void hspi_init(void);
 
 void hspi_write(void *buf, uint32_t len);
 
-#endif  // _CLOCK_HSPI_
+#endif  // __REALEARTH_HSPI__

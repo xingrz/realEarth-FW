@@ -1,11 +1,10 @@
-#ifndef _CLOCK_TASK_WLAN_
-#define _CLOCK_TASK_WLAN_
+#ifndef __REALEARTH_TASK_WLAN__
+#define __REALEARTH_TASK_WLAN__
 
 #include "common.h"
 
-void wlan_proc_task(void *arg);
 void wlan_setup(char *ssid, char *password);
 void wlan_reset(void);
 bool wlan_configured(void);
 
-#endif  // _CLOCK_TASK_WLAN_
+#endif  // __REALEARTH_TASK_WLAN__

@@ -1,6 +1,6 @@
-#include "task_btn.h"
+#include "tasks.h"
 
-static const char *TAG = "task_btn";
+#define TAG "task_btn"
 
 #define PIN_KEY_USER GPIO_NUM_0
 #define LONG_PRESS_TIMEOUT_MS 1000
@@ -65,8 +65,6 @@ btn_proc_task(void *arg)
 	btn_q = xQueueCreate(3, sizeof(uint32_t));
 
 	drv_gpio_init();
-
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_BTN);
 
 	uint32_t num;
 	int val;

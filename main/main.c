@@ -1,39 +1,33 @@
 #include "common.h"
 
-static const char *TAG = "main";
+#define TAG "main"
 
 void
 app_main(void)
 {
+	ESP_LOGI(TAG, "realEarth %s (%d, %s)", GIT_TAG, GIT_INCREMENT, GIT_COMMIT);
+
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 
 	ESP_ERROR_CHECK(userdata_init());
 
-	BaseType_t ret = pdFALSE;
-	EventGroupHandle_t boot = xEventGroupCreate();
+	assert(pdPASS == xTaskCreate(lcd_proc_task, "lcd_proc_task", LCD_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(lcd_proc_task, "lcd_proc_task", 6 * 1024, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(lcd_proc_task): %d", ret);
+	assert(pdPASS == xTaskCreate(btn_proc_task, "btn_proc_task", BTN_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(btn_proc_task, "btn_proc_task", 2048, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(btn_proc_task): %d", ret);
+	assert(pdPASS == xTaskCreate(wlan_proc_task, "wlan_proc_task", WLAN_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(wlan_proc_task, "wlan_proc_task", 4096, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(wlan_proc_task): %d", ret);
+	assert(pdPASS == xTaskCreate(ntp_proc_task, "ntp_proc_task", NTP_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(ntp_proc_task, "ntp_proc_task", 2048, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(ntp_proc_task): %d", ret);
+	assert(pdPASS == xTaskCreate(earth_proc_task, "earth_proc_task", EARTH_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(earth_proc_task, "earth_proc_task", 8 * 1024, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(earth_proc_task): %d", ret);
+	assert(pdPASS == xTaskCreate(ble_proc_task, "ble_proc_task", BLE_PROC_STACK_SIZE, NULL,
+							 tskIDLE_PRIORITY + 1, NULL));
 
-	ret = xTaskCreate(ble_proc_task, "ble_proc_task", 2048, boot, 10, NULL);
-	if (ret != pdPASS) ESP_LOGE(TAG, "Failed xTaskCreate(ble_proc_task): %d", ret);
-
-	xEventGroupWaitBits(boot, BOOT_TASK_ALL, pdFALSE, pdTRUE, portMAX_DELAY);
 	ESP_LOGI(TAG, "SYSTEM READY");
-
-	while (1) {
-		vTaskDelay(10);
-	}
 }

@@ -1,5 +1,5 @@
-#ifndef _CLOCK_DECODE_IMAGE_
-#define _CLOCK_DECODE_IMAGE_
+#ifndef __REALEARTH_DECODE_IMAGE__
+#define __REALEARTH_DECODE_IMAGE__
 
 #include "common.h"
 
@@ -8,4 +8,4 @@ typedef void (*decode_cb)(
 
 esp_err_t decode_image(uint8_t *input, decode_cb cb);
 
-#endif  // _CLOCK_DECODE_IMAGE_
+#endif  // __REALEARTH_DECODE_IMAGE__

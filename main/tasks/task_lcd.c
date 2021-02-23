@@ -1,6 +1,7 @@
+#include "tasks.h"
 #include "task_lcd.h"
 
-static const char *TAG = "task_lcd";
+#define TAG "task_lcd"
 
 #define DRAW_RECT_SIZE 16
 
@@ -51,8 +52,6 @@ lcd_proc_task(void *arg)
 
 	ESP_LOGI(TAG, "Enable backlight...");
 	gc9a01_set_backlight(GC9A01_BACKLIGHT_MAX);
-
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_LCD);
 
 	uint8_t *jpeg = NULL;
 	while (1) {

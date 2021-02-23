@@ -1,4 +1,5 @@
-set(tjpgd_srcs "src/tjpgd.c")
+set(COMPONENT_SRCS "src/tjpgd.c")
 
-idf_component_register(SRCS "${tjpgd_srcs}"
-                       INCLUDE_DIRS "include")
+set(COMPONENT_ADD_INCLUDEDIRS "include")
+
+register_component()

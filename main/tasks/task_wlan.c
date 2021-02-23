@@ -1,6 +1,7 @@
+#include "tasks.h"
 #include "task_wlan.h"
 
-static const char *TAG = "task_wlan";
+#define TAG "task_wlan"
 
 static xQueueHandle wlan_q = NULL;
 
@@ -24,8 +25,6 @@ wlan_proc_task(void *arg)
 
 	ESP_LOGI(TAG, "Init Wi-Fi...");
 	wlan_init();
-
-	xEventGroupSetBits((EventGroupHandle_t)arg, BOOT_TASK_WLAN);
 
 	userdata_t user = {0};
 	userdata_read(&user);

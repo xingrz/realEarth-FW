@@ -1,5 +1,5 @@
-#ifndef _CLOCK_BLEC_
-#define _CLOCK_BLEC_
+#ifndef __REALEARTH_BLEC__
+#define __REALEARTH_BLEC__
 
 #include "common.h"
 
@@ -20,4 +20,4 @@ void blec_adv_stop();
 
 void blec_send(void *buf, uint16_t len);
 
-#endif  // _CLOCK_BLEC_
+#endif  // __REALEARTH_BLEC__
